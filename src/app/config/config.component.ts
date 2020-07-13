@@ -1,9 +1,10 @@
+import { Component, OnInit } from '@angular/core';
+import { FormGroup, FormBuilder, Validators, FormArray } from '@angular/forms';
+
 import { Votante } from './../modelo/entidade/votante';
 import { Opcao } from './../modelo/entidade/opcao';
 import { Pauta } from './../modelo/entidade/pauta';
 import { Votacao } from './../modelo/entidade/votacao';
-import { Component, OnInit } from '@angular/core';
-import { FormControl, FormGroup, FormBuilder, Validators, FormArray } from '@angular/forms';
 
 @Component({
   selector: 'app-config',
@@ -93,7 +94,7 @@ export class ConfigComponent implements OnInit {
 
   private criarVotante(valor: Votante): FormGroup {
     const result = this.fb.group({
-      id: [valor.id, [Validators.required]],
+      identificacao: [valor.identificacao, [Validators.required]],
       nome: [valor.nome, [Validators.required]],
       contato: [valor.contato, [Validators.required]],
       senha: [valor.senha, [Validators.required]],
@@ -167,15 +168,15 @@ export class ConfigComponent implements OnInit {
     arquivo.onloadend = (e) => {
       (this.frm.get('votanteLista') as FormArray).clear();
       const linhas = (arquivo.result as string).split(/\r\n|\n/);
-      let id = 0;
+      let identificacao = 0;
       let nome = 0;
       let contato = 0;
       linhas.forEach(l => {
         const colunas = l.split(/;/);
-        if (id === 0) {
+        if (identificacao === 0) {
           for (let p = 0; p < colunas.length; p++) {
             if (colunas[p] === 'identificacao') {
-              id = p;
+              identificacao = p;
             }
             if (colunas[p] === 'nome') {
               nome = p;
@@ -186,7 +187,7 @@ export class ConfigComponent implements OnInit {
           }
         } else {
           const votante = new Votante();
-          votante.id = colunas[id];
+          votante.identificacao = colunas[identificacao];
           votante.nome = colunas[nome];
           votante.contato = colunas[contato];
           const reg = this.criarVotante(votante);

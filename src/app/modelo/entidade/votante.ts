@@ -1,5 +1,6 @@
 export class Votante {
-  public id: string;
+  public id: number;
+  public identificacao: string;
   public nome: string;
   public contato: string;
   public senha: string;

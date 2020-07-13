@@ -208,11 +208,11 @@
           {{i+1}}.
         </td>
         <td>
-          <label *ngIf="!votante['editando']">{{votante.value.id}}</label>
+          <label *ngIf="!votante['editando']">{{votante.value.identificacao}}</label>
           <div class="form-group" *ngIf="votante['editando']">
             <mat-form-field appearance="fill">
               <mat-label>Identificação</mat-label>
-              <input matInput formControlName="id">
+              <input matInput formControlName="identificacao">
             </mat-form-field>
           </div>
         </td>

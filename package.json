@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
-    "start": "node server.js",
+    "start": "node server/start.js",
     "build": "ng build",
     "test": "ng test",
     "lint": "ng lint",
@@ -25,10 +25,12 @@
     "@angular/platform-browser-dynamic": "~10.0.2",
     "@angular/router": "~10.0.2",
     "@ng-bootstrap/ng-bootstrap": "^7.0.0",
+    "bluebird": "^3.7.2",
     "bootstrap": "^4.5.0",
     "express": "^4.17.1",
     "moment": "^2.27.0",
     "rxjs": "~6.5.5",
+    "sqlite3": "^5.0.0",
     "tslib": "^2.0.0",
     "zone.js": "~0.10.3"
   },
