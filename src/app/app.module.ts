@@ -5,8 +5,8 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { MatMomentDateModule, MomentDateAdapter } from '@angular/material-moment-adapter';
-
+import { MatMomentDateModule } from '@angular/material-moment-adapter';
+import { HttpClientModule } from '@angular/common/http';
 
 @NgModule({
   declarations: [
@@ -18,6 +18,7 @@ import { MatMomentDateModule, MomentDateAdapter } from '@angular/material-moment
     NgbModule,
     BrowserAnimationsModule,
     MatMomentDateModule,
+    HttpClientModule,
   ],
   providers: [
   ],

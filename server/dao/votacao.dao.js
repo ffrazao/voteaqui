@@ -45,7 +45,7 @@ class VotacaoDao {
            termino = ?
       WHERE id = ?`,
       [codigo, nome, descricao, senha, inicio, termino, id]
-    )
+    );
   }
 
   delete(id) {
@@ -63,6 +63,26 @@ class VotacaoDao {
   getByCodigo(valor) {
     return this.dao.get(`SELECT * FROM ${this.nomeTabela} WHERE codigo = ?`, [valor]);
   }
+
+  getByParticipanteIdentificacao(identificacao) {
+    return this.dao.all(
+      `SELECT   p.nome as participanteNome,
+                v.id,
+                v.codigo,
+                v.nome,
+                v.descricao,
+                v.inicio,
+                v.termino,
+                p.senha
+      FROM      Votacao v
+       JOIN     Participante p
+       ON       p.votacaoid = v.id
+       WHERE    v.inicio BETWEEN strftime('%Y-%m-%d', 'now', '-1 month') AND strftime('%Y-%m-%d', 'now', '+1 month')
+       AND      p.identificacao = ?
+       ORDER BY v.inicio`,
+      [identificacao]);
+  }
+
 
 }
 

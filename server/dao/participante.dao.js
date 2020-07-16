@@ -1,5 +1,5 @@
-class VotanteDao {
-  nomeTabela = 'Votante';
+class ParticipanteDao {
+  nomeTabela = 'Participante';
 
   constructor(dao) {
     this.dao = dao;
@@ -62,7 +62,7 @@ class VotanteDao {
   }
 
   getByVotacaoId(id) {
-    return this.dao.get(`SELECT * FROM ${this.nomeTabela} WHERE votacaoId = ?`, [id]);
+    return this.dao.all(`SELECT * FROM ${this.nomeTabela} WHERE votacaoId = ?`, [id]);
   }
 
   getByIdentificacao(valor) {
@@ -71,4 +71,4 @@ class VotanteDao {
 
 }
 
-module.exports = VotanteDao;
+module.exports = ParticipanteDao;

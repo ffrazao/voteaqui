@@ -37,7 +37,7 @@ class OpcaoDao {
        SET codigo = ?,
            nome = ?,
            descricao = ?,
-           pautaId = ?,
+           pautaId = ?
       WHERE id = ?`,
       [codigo, nome, descricao, pautaId, id]
     );

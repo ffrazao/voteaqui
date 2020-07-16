@@ -1,4 +1,4 @@
-export class Votante {
+export class Participante {
   public id: number;
   public identificacao: string;
   public nome: string;

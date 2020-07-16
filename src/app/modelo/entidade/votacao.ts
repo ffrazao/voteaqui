@@ -1,5 +1,5 @@
 import { Pauta } from './pauta';
-import { Votante } from './votante';
+import { Participante } from './participante';
 
 export class Votacao {
   public id: number;
@@ -10,5 +10,5 @@ export class Votacao {
   public inicio: string;
   public termino: string;
   public pautaLista: Pauta[] = [];
-  public votanteLista: Votante[] = [];
+  public participanteLista: Participante[] = [];
 }
