@@ -18,19 +18,19 @@
         <td>
           {{i+1}}.
         </td>
-        <td>
+        <td [routerLink]="[registro.id]">
           {{registro.codigo}}
         </td>
-        <td>
+        <td [routerLink]="[registro.id]">
           {{registro.nome}}
         </td>
-        <td>
+        <td [routerLink]="[registro.id]">
           <pre>{{registro.descricao}}</pre>
         </td>
-        <td>
+        <td [routerLink]="[registro.id]">
           {{registro.inicio | date : 'dd/MM/yyyy HH:mm' : 'GMT-3:00'}}
         </td>
-        <td>
+        <td [routerLink]="[registro.id]">
           {{registro.termino | date : 'dd/MM/yyyy HH:mm' : 'GMT-3:00'}}
         </td>
         <td>

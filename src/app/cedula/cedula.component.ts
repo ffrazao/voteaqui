@@ -37,8 +37,20 @@ export class CedulaComponent implements OnInit {
       this.identificacao = p.id;
       this.route.data.subscribe(r => {
         this.entidade = r.dados;
+        const agora = new Date();
+
         if (!this.entidade) {
           this.mensagem.erro(`Votação (${p.votacao}) não encontrada para o identificador ${this.identificacao}`);
+          this.router.navigate(['../', this.identificacao]);
+          return;
+        }
+        const inicio = new Date(this.entidade.votacaoLista[0].inicio);
+        const termino = new Date(this.entidade.votacaoLista[0].termino);
+        if (agora.getTime() < inicio.getTime()) {
+          this.mensagem.erro(`Votação (${this.entidade.votacaoLista[0].nome}) ainda não foi iniciada. Início previsto para (${inicio})`);
+          this.router.navigate(['../', this.identificacao]);
+        } else if (agora.getTime() > termino.getTime()) {
+          this.mensagem.erro(`Votação (${this.entidade.votacaoLista[0].nome}) encerrada em (${termino})`);
           this.router.navigate(['../', this.identificacao]);
         } else {
           for (const pauta of this.entidade.votacaoLista[0].pautaLista) {
@@ -76,7 +88,6 @@ export class CedulaComponent implements OnInit {
   async confirmar(): Promise<any> {
     let senha = '';
     senha = await this.mensagem.confirmeModelo('Confirme o seu voto! Insira a senha enviada', ConfirmarVotoComponent);
-    console.log('senha =>', senha);
     if (senha) {
       const votoJson = { codigo: this.entidade.votacaoLista[0].codigo, pautaLista: [] };
 
@@ -91,8 +102,6 @@ export class CedulaComponent implements OnInit {
 
       const voto = new Voto();
       voto.valor = JSON.stringify(votoJson);
-
-      console.log(voto, votoJson);
 
       this.servico.votar(this.identificacao, this.entidade.votacaoLista[0].id, senha, voto).subscribe(r => {
         this.mensagem.sucesso('Voto registrado com sucesso!!!');
@@ -111,7 +120,6 @@ export class CedulaComponent implements OnInit {
   escolhas(pauta: Pauta): number {
     let qtdSim = 0;
     pauta.opcaoLista.forEach((o) => {
-      console.log(o);
       qtdSim = qtdSim + (o['voto'] === 'S' ? 1 : 0);
     });
     return qtdSim;

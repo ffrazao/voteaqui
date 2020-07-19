@@ -5,6 +5,9 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatTabsModule } from '@angular/material/tabs';
+import { MatIconModule } from '@angular/material/icon';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatRadioModule } from '@angular/material/radio';
 
 
 @NgModule({
@@ -15,6 +18,9 @@ import { MatTabsModule } from '@angular/material/tabs';
     MatCheckboxModule,
     MatDatepickerModule,
     MatTabsModule,
+    MatIconModule,
+    MatSlideToggleModule,
+    MatRadioModule,
   ]
 })
 export class MaterialModule { }

@@ -1,3 +1,4 @@
+import { MensagemService } from './../../comum/service/mensagem/mensagem.service';
 import { environment } from './../../../environments/environment';
 import { Component, OnInit } from '@angular/core';
 import { FormGroup, FormBuilder, Validators, FormArray } from '@angular/forms';
@@ -25,6 +26,7 @@ export class FormComponent implements OnInit {
     private servico: ConfigService,
     private _route: ActivatedRoute,
     private _router: Router,
+    private mensagem: MensagemService,
   ) { }
 
   agora(): Date {
@@ -37,13 +39,12 @@ export class FormComponent implements OnInit {
       this._route.data.subscribe((info) => {
           this.entidade = info.dados;
           if (this.id && (prompt('Digite a senha de acesso') !== this.entidade.senha)) {
-            alert('Senha inválida');
+            this.mensagem.erro('Senha inválida');
             this._router.navigate(['/config']);
           }
           this.frm = this.carregar(this.entidade);
         });
     });
-
 
   }
 
@@ -249,26 +250,26 @@ ATENÇÃO: memorize esta senha, ela será solicitada durante o processo de vota�
     event.preventDefault();
     if (this.frm.invalid) {
       const msg = 'Dados inválidos. Corrija-os antes de enviar.';
-      alert(msg);
+      this.mensagem.erro(msg);
       throw new Error(msg);
     }
     if (!this.frm.value.id) {
       this.servico.create(this.frm.value as Votacao).subscribe((r) => {
         console.log(r);
-        alert('Sucesso. As informações foram salvas!');
+        this.mensagem.sucesso('Sucesso. As informações foram salvas!');
         this._router.navigate(['/config']);
       }, (err) => {
         console.log(err);
-        alert(`Erro ao processar.`);
+        this.mensagem.erro(`Erro ao processar. (${err})`);
       });
     } else {
       this.servico.update(this.frm.value as Votacao).subscribe((r) => {
         console.log(r);
-        alert('Sucesso. As informações foram salvas!');
+        this.mensagem.sucesso('Sucesso. As informações foram salvas!');
         this._router.navigate(['/config']);
       }, (err) => {
         console.log(err);
-        alert(`Erro ao processar.`);
+        this.mensagem.erro(`Erro ao processar.`);
       });
 
     }

@@ -31,44 +31,90 @@
           <tr>
             <th><b>{{i+1}}.</b></th>
             <th><b>{{pauta.nome}}</b></th>
-            <th colspan="2">
+            <th colspan="0">
               {{pauta.descricao}}
             </th>
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let opcao of pauta.opcaoLista; let j = index"
-            [class]="opcao.voto === 'S'? 'table-success' : opcao.voto === 'N' ? 'table-danger': ''">
-            <td>{{i+1}}.{{j+1}}.</td>
-            <td>{{opcao.nome}}</td>
-            <td>
-              <div [innerHTML]="opcao.descricao"></div>
-              <!-- <pre>{{opcao.descricao}}</pre> -->
-            </td>
-            <td>
-              <div>
-                <div class="custom-control custom-radio custom-control-inline">
-                  <input type="radio" [(ngModel)]="opcao.voto" [id]="'votoS_' + i + '_' + j"
-                    [name]="'voto_' + i + '_' + j" class="custom-control-input" value="S"
+          <ng-template ngFor let-opcao [ngForOf]="pauta.opcaoLista" let-j="index">
+            <tr [class]="opcao.voto === 'S'? 'table-success' : opcao.voto === 'N' ? 'table-danger': ''">
+              <td>{{i+1}}.{{j+1}}.</td>
+              <td>{{opcao.nome}}</td>
+              <td>
+                <div [innerHTML]="opcao.descricao"></div>
+                <!-- <pre>{{opcao.descricao}}</pre> -->
+              </td>
+            </tr>
+            <tr [class]="opcao.voto === 'S'? 'table-success' : opcao.voto === 'N' ? 'table-danger': ''">
+              <td>&nbsp;</td>
+              <td colspan="2">
+                <div class="d-inline-flex justify-content-around">
+                  <div class="btn btn-success">
+                    <div class="custom-control custom-radio custom-control-inline">
+                      <input type="radio" [(ngModel)]="opcao.voto" [id]="'votoS_' + i + '_' + j"
+                        [name]="'voto_' + i + '_' + j" class="custom-control-input" value="S"
+                        [disabled]="maxPermitido(pauta)">
+                      <label class="custom-control-label" [for]="'votoS_' + i + '_' + j">Sim</label>
+                    </div>
+                  </div>
+                  <div class="btn">
+                    <div class="custom-control custom-radio custom-control-inline">
+                      <input type="radio" [(ngModel)]="opcao.voto" [id]="'votoB_' + i + '_' + j"
+                        [name]="'voto_' + i + '_' + j" class="custom-control-input" value="">
+                      <label class="custom-control-label" [for]="'votoB_' + i + '_' + j">Em Branco</label>
+                    </div>
+                  </div>
+                  <div class="btn btn-danger">
+                    <div class="custom-control custom-radio custom-control-inline">
+                      <input type="radio" [(ngModel)]="opcao.voto" [id]="'votoN_' + i + '_' + j"
+                        [name]="'voto_' + i + '_' + j" class="custom-control-input" value="N">
+                      <label class="custom-control-label" [for]="'votoN_' + i + '_' + j">Não</label>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- <mat-button-toggle-group #group="matButtonToggleGroup" [(ngModel)]="opcao.voto">
+                  <mat-button-toggle color="sim" value="S" aria-label="Sim" [name]="'voto_' + i + '_' + j"
                     [disabled]="maxPermitido(pauta)">
-                  <label class="custom-control-label" [for]="'votoS_' + i + '_' + j">Sim</label>
-                </div>
-                <div class="custom-control custom-radio custom-control-inline">
-                  <input type="radio" [(ngModel)]="opcao.voto" [id]="'votoB_' + i + '_' + j"
-                    [name]="'voto_' + i + '_' + j" class="custom-control-input" value="">
-                  <label class="custom-control-label" [for]="'votoB_' + i + '_' + j">Em Branco</label>
-                </div>
-                <div class="custom-control custom-radio custom-control-inline">
-                  <input type="radio" [(ngModel)]="opcao.voto" [id]="'votoN_' + i + '_' + j"
-                    [name]="'voto_' + i + '_' + j" class="custom-control-input" value="N">
-                  <label class="custom-control-label" [for]="'votoN_' + i + '_' + j">Não</label>
-                </div>
-              </div>
-            </td>
-          </tr>
+                    Sim
+                  </mat-button-toggle>
+                  <mat-button-toggle value="" aria-label="Em branco" [name]="'voto_' + i + '_' + j">
+                    Em Branco
+                  </mat-button-toggle>
+                  <mat-button-toggle color="nao" value="N" aria-label="Não" [name]="'voto_' + i + '_' + j">
+                    Não
+                  </mat-button-toggle>
+                </mat-button-toggle-group> -->
+
+                <!-- <mat-slide-toggle class="example-margin" [disabled]="maxPermitido(pauta)" color="accent"
+                  (click)="opcao.voto === 'S' ? opcao.voto = '' : opcao.voto = 'S'"
+                  >
+                  [checked]="opcao.voto === 'S'"
+                  Sim
+                </mat-slide-toggle>
+                <mat-slide-toggle class="example-margin" color=""
+                  (click)="opcao.voto === 'N' ? opcao.voto = '' : opcao.voto = 'N'"
+                  >
+                  [checked]="opcao.voto === 'N'"
+                  Não
+                </mat-slide-toggle> -->
+
+                <!--
+                  <mat-radio-group aria-label="Seleção" [(ngModel)]="opcao.voto" class="d-flex justify-content-around">
+                  <mat-radio-button value="S" [disabled]="maxPermitido(pauta)" style="background-color: green;">Sim</mat-radio-button>
+                  <mat-radio-button value="">Em Branco</mat-radio-button>
+                  <mat-radio-button value="N" style="background-color: red;">Não</mat-radio-button>
+                </mat-radio-group>
+              -->
+
+              </td>
+            </tr>
+          </ng-template>
         </tbody>
         <tr>
-          <td colspan="5" class="text-right table-light">Escolhas: {{escolhas(pauta)}} / {{pauta.quantidadeEscolha}}</td>
+          <td colspan="5" class="text-right table-light">Escolhas: {{escolhas(pauta)}} / {{pauta.quantidadeEscolha}}
+          </td>
         </tr>
       </ng-template>
     </table>
