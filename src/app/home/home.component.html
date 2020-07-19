@@ -1,0 +1,12 @@
+<h1 class="mt-5 text-info">Identificação de Participante</h1>
+
+<p>Digite a sua identificação e clique no botão "Pesquisar"</p>
+
+<div class="form-group">
+  <mat-form-field appearance="fill">
+    <mat-label>Identificacao</mat-label>
+    <input matInput name="identificacao" [(ngModel)]="identificacao">
+  </mat-form-field>
+</div>
+
+<button mat-button class="btn btn-primary" [routerLink]="['../', identificacao]">Pesquisar</button>

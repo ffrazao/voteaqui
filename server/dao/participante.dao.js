@@ -1,5 +1,5 @@
 class ParticipanteDao {
-  nomeTabela = 'Participante';
+  nomeTabela = "Participante";
 
   constructor(dao) {
     this.dao = dao;
@@ -62,13 +62,42 @@ class ParticipanteDao {
   }
 
   getByVotacaoId(id) {
-    return this.dao.all(`SELECT * FROM ${this.nomeTabela} WHERE votacaoId = ?`, [id]);
+    return this.dao.all(
+      `SELECT * FROM ${this.nomeTabela} WHERE votacaoId = ?`,
+      [id]
+    );
   }
 
   getByIdentificacao(valor) {
-    return this.dao.get(`SELECT * FROM ${this.nomeTabela} WHERE identificacao = ?`, [valor]);
+    return this.dao.get(
+      `SELECT * FROM ${this.nomeTabela} WHERE identificacao = ?`,
+      [valor]
+    );
   }
 
+  getPodeVotarByIdentificacaoAndVotacaoId(identificacao, votacaoId) {
+    return this.dao.get(
+      `
+      SELECT p.id, p.senha
+      FROM   ${this.nomeTabela} p
+      JOIN   Votacao v
+      ON     v.id = p.votacaoId
+      WHERE  (strftime('%Y-%m-%d %H-%M','now', 'localtime') BETWEEN strftime('%Y-%m-%d %H-%M', v.inicio) AND strftime('%Y-%m-%d %H-%M', v.termino))
+      AND    p.votou = false
+      AND    p.identificacao = ?
+      AND    v.id = ?`,
+      [identificacao, votacaoId]
+    );
+  }
+
+  votar(id) {
+    return this.dao.run(
+      `UPDATE ${this.nomeTabela}
+       SET votou = true
+      WHERE id = ?`,
+      [id]
+    );
+  }
 }
 
 module.exports = ParticipanteDao;

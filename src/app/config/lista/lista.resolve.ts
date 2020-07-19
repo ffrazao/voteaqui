@@ -18,9 +18,7 @@ export class ListaResolve implements Resolve<Votacao> {
         route: ActivatedRouteSnapshot,
         state: RouterStateSnapshot
     ): any {
-        return {
-            principal: this.servico.list(),
-        };
+        return this.servico.list();
     }
 
 }

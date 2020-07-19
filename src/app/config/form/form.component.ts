@@ -1,3 +1,4 @@
+import { environment } from './../../../environments/environment';
 import { Component, OnInit } from '@angular/core';
 import { FormGroup, FormBuilder, Validators, FormArray } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -34,15 +35,13 @@ export class FormComponent implements OnInit {
     this._route.params.subscribe(p => {
       this.id = p.id;
       this._route.data.subscribe((info) => {
-        info.resolve.principal.subscribe((p: Votacao) => {
-          this.entidade = p;
+          this.entidade = info.dados;
           if (this.id && (prompt('Digite a senha de acesso') !== this.entidade.senha)) {
             alert('Senha inválida');
             this._router.navigate(['/config']);
           }
           this.frm = this.carregar(this.entidade);
         });
-      });
     });
 
 
@@ -222,16 +221,26 @@ export class FormComponent implements OnInit {
     arquivo.readAsText(event.target.files[0]);
   }
 
-  enviarLink(participante: Participante): void {
-    const url = `https://api.whatsapp.com/send?phone=${participante.contato}&text=${participante.senha}`;
+  enviarLink(votacao: Votacao, participante: Participante): void {
+    const mensagem =
+`Olá ${participante.nome}!,
+
+Encaminhamos o link ${environment.API_URL}/${participante.identificacao}/${votacao.id}
+e a sua senha *${participante.senha}*
+para votação *_${votacao.nome}_*
+
+ATENÇÃO: memorize esta senha, ela será solicitada durante o processo de votação`;
+
+    const url = `https://api.whatsapp.com/send?phone=${participante.contato}&text=${encodeURI(mensagem)}&preview_url=true`;
     const win = window.open(url, '_blank');
   }
 
   enviarLinkTodos(): void {
+    const votacao = this.frm.value;
     const lista = this.frm.get('participanteLista').value;
     if (lista && lista.length && confirm('Confirme o envio')) {
       lista.forEach((v: Participante) => {
-        this.enviarLink(v);
+        this.enviarLink(votacao, v);
       });
     }
   }

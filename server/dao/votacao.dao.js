@@ -1,6 +1,5 @@
 class VotacaoDao {
-
-  nomeTabela = 'Votacao';
+  nomeTabela = "Votacao";
 
   constructor(dao) {
     this.dao = dao;
@@ -15,7 +14,8 @@ class VotacaoDao {
       descricao TEXT NOT NULL,
       senha     TEXT NOT NULL,
       inicio    TEXT NOT NULL,
-      termino   TEXT NOT NULL
+      termino   TEXT NOT NULL,
+      resultado TEXT
     )`;
     return this.dao.run(sql);
   }
@@ -37,14 +37,14 @@ class VotacaoDao {
   update(id, codigo, nome, descricao, senha, inicio, termino) {
     return this.dao.run(
       `UPDATE ${this.nomeTabela}
-       SET codigo = ?,
+       SET --codigo = ?,
            nome = ?,
            descricao = ?,
            senha = ?,
            inicio = ?,
            termino = ?
       WHERE id = ?`,
-      [codigo, nome, descricao, senha, inicio, termino, id]
+      [/*codigo, */ nome, descricao, senha, inicio, termino, id]
     );
   }
 
@@ -61,7 +61,9 @@ class VotacaoDao {
   }
 
   getByCodigo(valor) {
-    return this.dao.get(`SELECT * FROM ${this.nomeTabela} WHERE codigo = ?`, [valor]);
+    return this.dao.get(`SELECT * FROM ${this.nomeTabela} WHERE codigo = ?`, [
+      valor,
+    ]);
   }
 
   getByParticipanteIdentificacao(identificacao) {
@@ -73,17 +75,35 @@ class VotacaoDao {
                 v.descricao,
                 v.inicio,
                 v.termino,
-                p.senha
+                p.senha,
+                p.votou
       FROM      Votacao v
        JOIN     Participante p
        ON       p.votacaoid = v.id
-       WHERE    v.inicio BETWEEN strftime('%Y-%m-%d', 'now', '-1 month') AND strftime('%Y-%m-%d', 'now', '+1 month')
+       WHERE    v.inicio BETWEEN strftime('%Y-%m-%d', 'now', '-1 month', 'localtime') AND strftime('%Y-%m-%d', 'now', '+1 month', 'localtime')
        AND      p.identificacao = ?
        ORDER BY v.inicio`,
-      [identificacao]);
+      [identificacao]
+    );
   }
 
+  getResultado(votacaoid) {
+    return this.dao.get(
+      `SELECT json_extract(v.resultado, '$') as resultado, strftime('%Y-%m-%d %H-%M','now', 'localtime') > strftime('%Y-%m-%d %H-%M', v.termino) as encerrado
+       FROM Votacao v
+       WHERE  id = ?`,
+      [votacaoid]
+    );
+  }
 
+  updateResultado(id, resultado) {
+    return this.dao.run(
+      `UPDATE ${this.nomeTabela}
+       SET resultado = json(?)
+      WHERE id = ?`,
+      [resultado, id]
+    );
+  }
 }
 
 module.exports = VotacaoDao;

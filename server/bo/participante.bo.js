@@ -1,7 +1,6 @@
-const ParticipanteDao = require('../dao/participante.dao');
+const ParticipanteDao = require("../dao/participante.dao");
 
 class ParticipanteBo {
-
   constructor(dao) {
     this.dbDao = dao;
     this.dao = new ParticipanteDao(this.dbDao);
@@ -9,13 +8,13 @@ class ParticipanteBo {
 
   novo(registro) {
     registro = {};
-    console.log('novo participante', registro);
+    console.log("novo participante", registro);
     return registro;
   }
 
   // API Participante CREATE
-  async create (registro, votacaoId) {
-    console.log('criar participante', registro);
+  async create(registro, votacaoId) {
+    console.log("criar participante", registro);
 
     registro.id = (
       await this.dao.create(
@@ -33,8 +32,8 @@ class ParticipanteBo {
   }
 
   // API Participante RESTORE
-  async restore (id) {
-    console.log('carregar participante', id);
+  async restore(id) {
+    console.log("carregar participante", id);
     var result = null;
     var registro = await this.dao.getById(id);
     if (registro) {
@@ -44,8 +43,8 @@ class ParticipanteBo {
   }
 
   // API Votacao UPDATE
-  async update (registro, id) {
-    console.log('atualizar participante', registro);
+  async update(registro, id) {
+    console.log("atualizar participante", registro);
 
     // resgatar registro anterior
     var anterior = await this.dao.getById(registro.id);
@@ -69,7 +68,7 @@ class ParticipanteBo {
   }
 
   // API Votacao DELETE
-  async delete (id) {
+  async delete(id) {
     await this.dao.delete(id);
   }
 
@@ -88,9 +87,18 @@ class ParticipanteBo {
     for (var registro of result) {
       await delete registro.votacaoId;
     }
-    return  result;
+    return result;
   }
 
+  async getPodeVotarByIdentificacaoAndVotacaoId(identificacao, votacaoId) {
+    var result = await this.dao.getPodeVotarByIdentificacaoAndVotacaoId(identificacao, votacaoId);
+    return result;
+  }
+
+  async votar(participanteId) {
+    var result = await this.dao.votar(participanteId);
+    return result;
+  }
 }
 
 module.exports = ParticipanteBo;

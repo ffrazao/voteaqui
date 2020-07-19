@@ -15,27 +15,27 @@ const routes: Routes = [
       // {
       //   path: 'filtro',
       //   loadChildren: () => import('./filtro/filtro.module').then(m => m.FiltroModule),
-      //   resolve: { resolve: FiltroResolve }
+      //   resolve: { dados: FiltroResolve },
       // },
       {
         path: 'novo',
         loadChildren: () => import('./form/form.module').then(m => m.FormModule),
-        resolve: { resolve: FormNovoResolve }
+        resolve: { dados: FormNovoResolve },
       },
       {
         path: ':id/edit',
         loadChildren: () => import('./form/form.module').then(m => m.FormModule),
-        resolve: { resolve: FormResolve }
+        resolve: { dados: FormResolve },
       },
       {
         path: ':id',
         loadChildren: () => import('./form/form.module').then(m => m.FormModule),
-        resolve: { resolve: FormResolve }
+        resolve: { dados: FormResolve },
       },
       {
         path: '',
         loadChildren: () => import('./lista/lista.module').then(m => m.ListaModule),
-        resolve: { resolve: ListaResolve }
+        resolve: { dados: ListaResolve },
       },
     ]
   },

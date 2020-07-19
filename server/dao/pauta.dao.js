@@ -37,13 +37,13 @@ class PautaDao {
   update(id, codigo, nome, descricao, quantidadeEscolha, votacaoId) {
     return this.dao.run(
       `UPDATE ${this.nomeTabela}
-       SET codigo = ?,
+       SET --codigo = ?,
            nome = ?,
            descricao = ?,
            quantidadeEscolha = ?,
            votacaoId = ?
       WHERE id = ?`,
-      [codigo, nome, descricao, quantidadeEscolha, votacaoId, id]
+      [/*codigo, */nome, descricao, quantidadeEscolha, votacaoId, id]
     )
   }
 

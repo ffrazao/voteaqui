@@ -34,12 +34,12 @@ class OpcaoDao {
   update(id, codigo, nome, descricao, pautaId) {
     return this.dao.run(
       `UPDATE ${this.nomeTabela}
-       SET codigo = ?,
+       SET --codigo = ?,
            nome = ?,
            descricao = ?,
            pautaId = ?
       WHERE id = ?`,
-      [codigo, nome, descricao, pautaId, id]
+      [/*codigo, */nome, descricao, pautaId, id]
     );
   }
 

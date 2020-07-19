@@ -18,9 +18,7 @@ export class FormResolve implements Resolve<Votacao> {
         route: ActivatedRouteSnapshot,
         state: RouterStateSnapshot
     ): any {
-        return {
-            principal: this.servico.restore(route.params.id),
-        };
+        return this.servico.restore(route.params.id);
     }
 
 }

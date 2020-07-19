@@ -9,6 +9,8 @@ const VotacaoBo = require('./bo/votacao.bo');
 const votacaoBo = new VotacaoBo(dbDao);
 const ParticipanteBo = require('./bo/participante.bo');
 const participanteBo = new ParticipanteBo(dbDao);
+const VotoBo = require('./bo/voto.bo');
+const votoBo = new VotoBo(dbDao);
 
 const app = express();
 
@@ -53,13 +55,10 @@ app.post('/api/votacao', async function (req, res) {
 app.get('/api/votacao/:id', async function (req, res) {
   try {
     var result = await votacaoBo.restore(req.params.id);
-    console.log('result', result);
     if (result) {
-      console.log(JSON.stringify(result));
       res.write(JSON.stringify(result));
     } else {
       var msg = `Registro não encontrado`;
-      console.log(msg);
       res.sendStatus(404);
     }
   } catch (e) {
@@ -115,7 +114,27 @@ app.get('/api/votacao', async function (req, res) {
   }
   res.end();
 });
-
+app.get('/api/votacao/resultado/:votacaoId', async function (req, res) {
+  try {
+    var result = await votacaoBo.resultado(req.params.votacaoId);
+    console.log('result', result);
+    if (result) {
+      console.log(JSON.stringify(result));
+      res.write(JSON.stringify(result));
+    } else {
+      var msg = `Registro não encontrado`;
+      console.log(msg);
+      res.sendStatus(404);
+    }
+  } catch (e) {
+    var msg = `Erro ao carregar registro (${e})`;
+    console.log(msg);
+    res.status(500);
+    res.statusMessage = msg;
+    res.write(JSON.stringify({ msg }));
+  }
+  res.end();
+});
 
 // API Participante
 
@@ -127,9 +146,34 @@ app.get('/api/participante/:identificacao', async function (req, res) {
       console.log(JSON.stringify(result));
       res.write(JSON.stringify(result));
     } else {
-      var msg = `Registro não encontrado`;
-      console.log(msg);
-      res.sendStatus(404);
+      // var msg = `Registro não encontrado`;
+      // console.log(msg);
+      // res.sendStatus(404);
+      res.write('');
+    }
+  } catch (e) {
+    var msg = `Erro ao carregar registros (${e})`;
+    console.log(msg);
+    res.status(500);
+    res.statusMessage = msg;
+    res.write(JSON.stringify({ msg }));
+  }
+  res.end();
+});
+app.get('/api/participante/:identificacao/:votacao', async function (req, res) {
+  try {
+    var result = await votacaoBo.getByParticipanteIdentificacao(req.params.identificacao);
+    if (result) {
+      for (var i = result.votacaoLista.length -1; i >= 0; i--) {
+        if (result.votacaoLista[i].id !== parseInt(req.params.votacao)) {
+          result.votacaoLista.splice(i, 1);
+        }
+      }
+      if (result.votacaoLista.length === 1) {
+        res.write(JSON.stringify(result));
+      } else {
+        res.write('');
+      }
     }
   } catch (e) {
     var msg = `Erro ao carregar registros (${e})`;
@@ -141,7 +185,42 @@ app.get('/api/participante/:identificacao', async function (req, res) {
   res.end();
 });
 
-// baixar font-end
+
+// API Voto
+
+app.post('/api/voto/novo', async function (req, res) {
+  var registro = req.body;
+  res.write(JSON.stringify(await votacaoBo.novo(registro)));
+  res.end();
+});
+app.post('/api/voto/:identificacao/:votacaoId/:senha', async function (req, res) {
+  var registro = req.body;
+  try {
+    dbDao.db.exec('BEGIN');
+    var participante = await participanteBo.getPodeVotarByIdentificacaoAndVotacaoId(req.params.identificacao, req.params.votacaoId);
+    if (!participante) {
+      throw new Error('Voto não autorizado!');
+    }
+    if (participante.senha !== req.params.senha) {
+      throw new Error('Senha inválida!');
+    }
+    var result = await votoBo.create(registro);
+    await participanteBo.votar(participante.id);
+    res.write(`${result}`);
+    dbDao.db.exec('COMMIT');
+  } catch (e) {
+    // rollback
+    dbDao.db.exec('ROLLBACK');
+    var msg = `Erro ao inserir registro (${e})`;
+    console.log(msg);
+    res.status(500);
+    res.statusMessage = msg;
+    res.write(JSON.stringify({ msg }));
+  }
+  res.end();
+});
+
+// baixar front-end
 app.get('/*', function (req, res) {
   console.log('executando cliente', req.path);
   res.sendFile(path.join(`${__dirname}/../dist/${nomeApp}/index.html`));

@@ -21,9 +21,7 @@ export class ListaComponent implements OnInit {
 
   ngOnInit(): void {
     this._route.data.subscribe((info) => {
-      info.resolve.principal.subscribe((p: Votacao[]) => {
-        this.entidade = p;
-      });
+        this.entidade = info.dados;
     });
   }
 

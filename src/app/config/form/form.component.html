@@ -8,21 +8,21 @@
   <h1 class="mt-5 text-info">Cadastro de Votação</h1>
 
   <div class="form-group">
-    <mat-form-field appearance="fill">
+    <mat-form-field appearance="fill" style="min-width: 50%;">
       <mat-label>Código</mat-label>
-      <input matInput formControlName="codigo">
+      <input matInput formControlName="codigo" [readonly]="frm.value.id">
     </mat-form-field>
   </div>
 
   <div class="form-group">
-    <mat-form-field appearance="fill">
+    <mat-form-field appearance="fill" style="min-width: 50%;">
       <mat-label>Nome</mat-label>
       <input matInput formControlName="nome">
     </mat-form-field>
   </div>
 
   <div class="form-group">
-    <mat-form-field appearance="fill">
+    <mat-form-field appearance="fill" style="width: 100%;">
       <mat-label>Descrição</mat-label>
       <textarea matInput mat-autosize formControlName="descricao"></textarea>
     </mat-form-field>
@@ -51,7 +51,7 @@
 
   <h2 class="mt-5 text-info">Pautas</h2>
   <div class="table-responsive">
-    <table class="table table-striped" style="width: 100%;"
+    <table class="table table-striped table-hover" style="width: 100%;"
       *ngIf="getLista(frm, 'pautaLista').controls.length" formArrayName="pautaLista">
       <thead class="thead-dark">
         <tr>
@@ -74,7 +74,7 @@
               <div class="form-group" *ngIf="pauta['editando']">
                 <mat-form-field appearance="fill">
                   <mat-label>Código</mat-label>
-                  <input matInput formControlName="codigo">
+                  <input matInput formControlName="codigo" [readonly]="pauta.value.id">
                 </mat-form-field>
               </div>
             </td>
@@ -88,7 +88,8 @@
               </div>
             </td>
             <td>
-              <label *ngIf="!pauta['editando']"><pre>{{pauta.value.descricao}}</pre></label>
+              <label *ngIf="!pauta['editando']">
+                <pre>{{pauta.value.descricao}}</pre></label>
               <div class="form-group" *ngIf="pauta['editando']">
                 <mat-form-field appearance="fill">
                   <mat-label>Descrição</mat-label>
@@ -124,7 +125,7 @@
 
               <h3 class="mt-5 text-info">Opções</h3>
               <div class="table-responsive">
-                <table class="table table-striped" style="width: 100%;"
+                <table class="table table-striped table-hover" style="width: 100%;"
                   *ngIf="getLista(pauta, 'opcaoLista').controls.length">
                   <thead class="thead-dark">
                     <tr>
@@ -145,7 +146,7 @@
                         <div class="form-group" *ngIf="opcao['editando']">
                           <mat-form-field appearance="fill">
                             <mat-label>Código</mat-label>
-                            <input matInput formControlName="codigo">
+                            <input matInput formControlName="codigo" [readonly]="opcao.value.id">
                           </mat-form-field>
                         </div>
                       </td>
@@ -159,7 +160,8 @@
                         </div>
                       </td>
                       <td>
-                        <label *ngIf="!opcao['editando']"><pre>{{opcao.value.descricao}}</pre></label>
+                        <label *ngIf="!opcao['editando']">
+                          <pre>{{opcao.value.descricao}}</pre></label>
                         <div class="form-group" *ngIf="opcao['editando']">
                           <mat-form-field appearance="fill">
                             <mat-label>Descrição</mat-label>
@@ -204,7 +206,7 @@
     *ngIf="getLista(frm, 'participanteLista').controls.length">Enviar Link a
     Todos</button>
   <div class="table-responsive">
-    <table class="table table-striped" style="width: 100%;"
+    <table class="table table-striped table-hover" style="width: 100%;"
       *ngIf="getLista(frm, 'participanteLista').controls.length">
       <thead class="thead-dark">
         <tr>
@@ -269,7 +271,7 @@
                 <button type="button" mat-button class="btn btn-secondary btn-sm"
                   (click)="participanteExcluir(frm, i)">Excluir</button>
                 <button type="button" mat-button class="btn btn-secondary btn-sm"
-                  (click)="enviarLink(participante.value)">Enviar
+                  (click)="enviarLink(frm.value, participante.value)">Enviar
                   Link</button>
               </div>
               <div *ngIf="participante['editando']">

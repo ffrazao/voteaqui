@@ -1,17 +1,17 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 
-import { VotarComponent } from './votar.component';
-import { VotarResolver } from './votar.resolver';
+import { PainelComponent } from './painel.component';
+import { PainelResolver } from './painel.resolver';
 
 const routes: Routes = [{
   path: '',
-  component: VotarComponent,
-  resolve: { identificacao: VotarResolver },
+  component: PainelComponent,
+  resolve: { dados: PainelResolver },
 }];
 
 @NgModule({
   imports: [RouterModule.forChild(routes)],
   exports: [RouterModule]
 })
-export class VotarRoutingModule { }
+export class PainelRoutingModule { }

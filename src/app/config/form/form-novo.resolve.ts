@@ -18,9 +18,7 @@ export class FormNovoResolve implements Resolve<Votacao> {
         route: ActivatedRouteSnapshot,
         state: RouterStateSnapshot
     ): any {
-        return {
-            principal: this.servico.novo(null),
-        };
+        return this.servico.novo(null);
     }
 
 }
