@@ -202,27 +202,74 @@
   <h2 class="mt-5 text-info">Participantes</h2>
 
   <input type="file" class="btn btn-secondary btn-sm" (change)="lerArquivo($event)">
-  <button type="button" mat-button class="btn btn-secondary btn-sm" (click)="enviarLinkTodos()"
-    *ngIf="getLista(frm, 'participanteLista').controls.length">Enviar Link a
-    Todos</button>
+  <button type="button" mat-button class="btn btn-secondary btn-sm" (click)="enviarLinkTodos('whatsapp')"
+    *ngIf="totalSelecao()">Enviar Link por WhatsApp a Todos Selecionados</button>
+  <button type="button" mat-button class="btn btn-secondary btn-sm" (click)="enviarLinkTodos('email')"
+    *ngIf="totalSelecao()">Enviar Link por E-Mail a Todos Selecionados</button>
+
+  <div class="d-sm-flex justify-content-between border border-secondary">
+    <div style="font-size:70%">
+      <div class="custom-control custom-radio custom-control-inline">
+        <input type="radio" [(ngModel)]="filtro" [ngModelOptions]="{standalone: true}" id="filtroT" name="filtro"
+          class="custom-control-input" value="">
+        <label class="custom-control-label" for="filtroT">Todos</label>
+      </div>
+      <div class="custom-control custom-radio custom-control-inline">
+        <input type="radio" [(ngModel)]="filtro" [ngModelOptions]="{standalone: true}" id="filtroF" name="filtro"
+          class="custom-control-input" value="V">
+        <label class="custom-control-label" for="filtroF">Já votaram</label>
+      </div>
+      <div class="custom-control custom-radio custom-control-inline">
+        <input type="radio" [(ngModel)]="filtro" [ngModelOptions]="{standalone: true}" id="filtroE" name="filtro"
+          class="custom-control-input" value="N">
+        <label class="custom-control-label" for="filtroE">Ainda não votaram</label>
+      </div>
+      <div>
+        Exibindo: {{(getLista(frm, 'participanteLista').controls | callback: filtrar: [filtro, filtroTexto]).length}} de
+        {{(getLista(frm, 'participanteLista').controls).length}} registro(s) =
+        {{((getLista(frm, 'participanteLista').controls | callback: filtrar: [filtro, filtroTexto]).length / (getLista(frm, 'participanteLista').controls).length) * 100 | number}}%
+      </div>
+    </div>
+    <div class="form-group" *ngIf="filtro===''">
+      <mat-form-field appearance="fill">
+        <mat-label>Pesquisar</mat-label>
+        <input matInput [(ngModel)]="filtroTexto" [ngModelOptions]="{standalone: true}" name="filtroTexto">
+      </mat-form-field>
+    </div>
+  </div>
+
+  <button type="button" mat-button class="btn btn-secondary btn-sm" (click)="formataTelefone()">Formatar
+    Telefone</button>
+
   <div class="table-responsive">
     <table class="table table-striped table-hover" style="width: 100%;"
-      *ngIf="getLista(frm, 'participanteLista').controls.length">
+      *ngIf="(getLista(frm, 'participanteLista').controls | callback: filtrar: [filtro, filtroTexto]).length">
       <thead class="thead-dark">
         <tr>
           <th>#</th>
+          <th>
+            <mat-checkbox (click)="seleciona($event)" [(ngModel)]="selecionaTodos" [ngModelOptions]="{standalone: true}"
+              name="selecionaTodos" color="primary">Todos / Nenhum</mat-checkbox>
+          </th>
           <th>Identificação</th>
           <th>Nome</th>
-          <th>Contato</th>
+          <th>Telefone</th>
+          <th>E-mail</th>
           <th>Senha</th>
           <th>Votou</th>
           <th>Ação</th>
         </tr>
       </thead>
       <tbody formArrayName="participanteLista">
-        <tr *ngFor="let participante of getLista(frm, 'participanteLista').controls; let i = index" [formGroupName]="i">
+        <tr
+          *ngFor="let participante of getLista(frm, 'participanteLista').controls | callback: filtrar: [filtro, filtroTexto]; let i = index"
+          [formGroupName]="i">
           <td>
             {{i+1}}.
+          </td>
+          <td>
+            <mat-checkbox [(ngModel)]="participante.value.selecao" [ngModelOptions]="{standalone: true}" color="primary"
+              [name]="'seleciona' + i"></mat-checkbox>
           </td>
           <td>
             <label *ngIf="!participante['editando']">{{participante.value.identificacao}}</label>
@@ -243,11 +290,20 @@
             </div>
           </td>
           <td>
-            <label *ngIf="!participante['editando']">{{participante.value.contato}}</label>
+            <label *ngIf="!participante['editando']">{{participante.value.telefone}}</label>
             <div class="form-group" *ngIf="participante['editando']">
               <mat-form-field appearance="fill">
-                <mat-label>Contato</mat-label>
-                <input matInput formControlName="contato">
+                <mat-label>Telefone</mat-label>
+                <input matInput formControlName="telefone">
+              </mat-form-field>
+            </div>
+          </td>
+          <td>
+            <label *ngIf="!participante['editando']">{{participante.value.email}}</label>
+            <div class="form-group" *ngIf="participante['editando']">
+              <mat-form-field appearance="fill">
+                <mat-label>E-mail</mat-label>
+                <input matInput formControlName="email">
               </mat-form-field>
             </div>
           </td>
@@ -271,8 +327,11 @@
                 <button type="button" mat-button class="btn btn-secondary btn-sm"
                   (click)="participanteExcluir(frm, i)">Excluir</button>
                 <button type="button" mat-button class="btn btn-secondary btn-sm"
-                  (click)="enviarLink(frm.value, participante.value)">Enviar
-                  Link</button>
+                  (click)="enviarLink('whatsapp', frm.value, participante.value)">Enviar
+                  Link por WhatsApp</button>
+                <button type="button" mat-button class="btn btn-secondary btn-sm"
+                  (click)="enviarLink('email', frm.value, participante.value)">Enviar
+                  Link por E-mail</button>
               </div>
               <div *ngIf="participante['editando']">
                 <button type="button" mat-button class="btn btn-secondary btn-sm"

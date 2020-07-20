@@ -9,18 +9,20 @@ class VotoDao {
   createTable() {
     const sql = `
     CREATE TABLE IF NOT EXISTS ${this.nomeTabela} (
-      id        INTEGER PRIMARY KEY AUTOINCREMENT,
-      valor     TEXT NOT NULL
+      id        INTEGER PRIMARY KEY AUTO_INCREMENT,
+      valor     TEXT NOT NULL,
+      votacaoId  INTEGER,
+      FOREIGN KEY (votacaoId) REFERENCES Votacao(id) ON DELETE CASCADE ON UPDATE CASCADE
     )`;
     return this.dao.run(sql);
   }
 
-  create(valor) {
+  create(valor, votacaoId) {
     return this.dao.run(
       `INSERT INTO ${this.nomeTabela} (
-        valor)
-      VALUES (json(?))`,
-      [valor]
+        valor, votacaoId)
+      VALUES (?, ?)`,
+      [valor, votacaoId]
     );
   }
 
@@ -40,8 +42,8 @@ class VotoDao {
     return this.dao.all(`SELECT * FROM ${this.nomeTabela}`);
   }
 
-  getByVotacaoCodigo(votacaoCodigo) {
-    return this.dao.all(`SELECT * FROM ${this.nomeTabela} WHERE json_extract(valor, '$.codigo') = ?`, [votacaoCodigo]);
+  getByVotacaoId(votacaoId) {
+    return this.dao.all(`SELECT * FROM ${this.nomeTabela} WHERE votacaoId = ?`, [votacaoId]);
   }
 
 }

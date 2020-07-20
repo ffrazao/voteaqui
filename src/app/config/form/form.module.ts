@@ -1,3 +1,4 @@
+import { PipeModule } from './../../comum/pipe/pipe.module';
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
@@ -14,7 +15,8 @@ import { ReactiveFormsModule, FormsModule } from '@angular/forms';
     FormRoutingModule,
     MaterialModule,
     ReactiveFormsModule,
-    FormsModule
+    FormsModule,
+    PipeModule,
   ]
 })
 export class FormModule { }

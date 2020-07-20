@@ -19,7 +19,8 @@ class VotoBo {
 
     registro.id = (
       await this.dao.create(
-        registro.valor
+        registro.valor,
+        registro.votacaoId
       )
     ).id;
 
@@ -51,7 +52,8 @@ class VotoBo {
 
     await this.dao.update(
       registro.id,
-      registro.valor
+      registro.valor,
+      registro.votacaoId
     );
 
     console.log(`voto id (${registro.id})`);
@@ -63,8 +65,8 @@ class VotoBo {
     await this.dao.delete(id);
   }
 
-  async getByVotacaoCodigo(votacaoCodigo) {
-    return await this.dao.getByVotacaoCodigo(votacaoCodigo);
+  async getByVotacaoId(votacaoCodigo) {
+    return await this.dao.getByVotacaoId(votacaoCodigo);
   }
 
 }

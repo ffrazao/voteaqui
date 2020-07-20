@@ -1,12 +1,11 @@
-import { Pauta } from './../modelo/entidade/pauta';
-import { ConfirmarVotoComponent } from './confirmar-voto/confirmar-voto.component';
-import { ConfirmeComponent } from './../comum/service/mensagem/confirme.component';
-import { Voto } from './../modelo/entidade/voto';
-import { CedulaService } from './cedula.service';
-import { Opcao } from './../modelo/entidade/opcao';
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 
+import { Pauta } from './../modelo/entidade/pauta';
+import { ConfirmarVotoComponent } from './confirmar-voto/confirmar-voto.component';
+import { Voto } from './../modelo/entidade/voto';
+import { CedulaService } from './cedula.service';
+import { Opcao } from './../modelo/entidade/opcao';
 import { MensagemService } from '../comum/service/mensagem/mensagem.service';
 
 @Component({
@@ -102,6 +101,7 @@ export class CedulaComponent implements OnInit {
 
       const voto = new Voto();
       voto.valor = JSON.stringify(votoJson);
+      voto.votacaoId = this.entidade.votacaoLista[0].id;
 
       this.servico.votar(this.identificacao, this.entidade.votacaoLista[0].id, senha, voto).subscribe(r => {
         this.mensagem.sucesso('Voto registrado com sucesso!!!');

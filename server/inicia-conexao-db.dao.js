@@ -1,31 +1,43 @@
-const Promise = require("bluebird");
 
-const Dao = require("./dao/dao");
-const VotacaoDao = require("./dao/votacao.dao");
-const PautaDao = require("./dao/pauta.dao");
-const OpcaoDao = require("./dao/opcao.dao");
-const ParticipanteDao = require("./dao/participante.dao");
-const VotoDao = require("./dao/voto.dao");
+const Dao = require('./dao/dao');
+const VotacaoDao = require('./dao/votacao.dao');
+const PautaDao = require('./dao/pauta.dao');
+const OpcaoDao = require('./dao/opcao.dao');
+const ParticipanteDao = require('./dao/participante.dao');
+const VotoDao = require('./dao/voto.dao');
 
-const conexaoDbDao = new Dao("./server/db.sqlite3");
+const dao = new Dao();
 
 function iniciarBancoDeDados() {
-  console.log("iniciando banco de dados");
-  const votacaoDao = new VotacaoDao(conexaoDbDao);
-  const pautaDao = new PautaDao(conexaoDbDao);
-  const opcaoDao = new OpcaoDao(conexaoDbDao);
-  const participanteDao = new ParticipanteDao(conexaoDbDao);
-  const votoDao = new VotoDao(conexaoDbDao);
+  console.log('iniciando banco de dados');
+  const votacaoDao = new VotacaoDao(dao);
+  const pautaDao = new PautaDao(dao);
+  const opcaoDao = new OpcaoDao(dao);
+  const participanteDao = new ParticipanteDao(dao);
+  const votoDao = new VotoDao(dao);
 
   votacaoDao
     .createTable()
     .then(() => {
       console.log(`Tabela Votacao verificada!`);
       votacaoDao.dao
-        .run(`CREATE UNIQUE INDEX IF NOT EXISTS VotacaoUq ON Votacao(codigo)`)
-        .then(() => console.log(`Indice VotacaoUq verificado!`))
-        .catch((err) => {
-          console.log(`Error: ${JSON.stringify(err)}`);
+        .get(
+          `SELECT COUNT(*) AS EXISTE
+           FROM information_schema.statistics
+           WHERE TABLE_SCHEMA = DATABASE()
+           AND TABLE_NAME = ?
+           AND INDEX_NAME = ?`,
+          ['Votacao', 'VotacaoUq']
+        )
+        .then((r) => {
+          if (!r.EXISTE) {
+            votacaoDao.dao
+              .run(`CREATE UNIQUE INDEX VotacaoUq ON Votacao(codigo)`)
+              .then(() => console.log(`Indice VotacaoUq verificado!`))
+              .catch((err) => {
+                console.log(`Error: ${JSON.stringify(err)}`);
+              });
+          }
         });
     })
     .catch((err) => {
@@ -36,12 +48,23 @@ function iniciarBancoDeDados() {
     .then(() => {
       console.log(`Tabela Pauta verificada!`);
       pautaDao.dao
-        .run(
-          `CREATE UNIQUE INDEX IF NOT EXISTS PautaUq ON Pauta(votacaoId, codigo)`
+        .get(
+          `SELECT COUNT(*) AS EXISTE
+           FROM information_schema.statistics
+           WHERE TABLE_SCHEMA = DATABASE()
+           AND TABLE_NAME = ?
+           AND INDEX_NAME = ?`,
+          ['Pauta', 'PautaUq']
         )
-        .then(() => console.log(`Indice PautaUq verificado!`))
-        .catch((err) => {
-          console.log(`Error: ${JSON.stringify(err)}`);
+        .then((r) => {
+          if (!r.EXISTE) {
+            pautaDao.dao
+              .run(`CREATE UNIQUE INDEX PautaUq ON Pauta(votacaoId, codigo)`)
+              .then(() => console.log(`Indice PautaUq verificado!`))
+              .catch((err) => {
+                console.log(`Error: ${JSON.stringify(err)}`);
+              });
+          }
         });
     })
     .catch((err) => {
@@ -52,10 +75,23 @@ function iniciarBancoDeDados() {
     .then(() => {
       console.log(`Tabela Opcao verificada!`);
       pautaDao.dao
-        .run(`CREATE UNIQUE INDEX IF NOT EXISTS OpcaoUq ON Opcao(pautaId, codigo)`)
-        .then(() => console.log(`Indice OpcaoUq verificado!`))
-        .catch((err) => {
-          console.log(`Error: ${JSON.stringify(err)}`);
+        .get(
+          `SELECT COUNT(*) AS EXISTE
+           FROM information_schema.statistics
+           WHERE TABLE_SCHEMA = DATABASE()
+           AND TABLE_NAME = ?
+           AND INDEX_NAME = ?`,
+          ['Pauta', 'PautaUq']
+        )
+        .then((r) => {
+          if (!r.EXISTE) {
+            opcaoDao.dao
+              .run(`CREATE UNIQUE INDEX OpcaoUq ON Opcao(pautaId, codigo)`)
+              .then(() => console.log(`Indice OpcaoUq criado com sucesso!`))
+              .catch((err) => {
+                console.log(`Error: ${JSON.stringify(err)}`);
+              });
+          }
         });
     })
     .catch((err) => {
@@ -77,4 +113,4 @@ function iniciarBancoDeDados() {
 
 iniciarBancoDeDados();
 
-module.exports = conexaoDbDao;
+module.exports = dao;

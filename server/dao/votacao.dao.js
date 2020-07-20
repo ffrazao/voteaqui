@@ -1,5 +1,5 @@
 class VotacaoDao {
-  nomeTabela = "Votacao";
+  nomeTabela = 'Votacao';
 
   constructor(dao) {
     this.dao = dao;
@@ -8,13 +8,13 @@ class VotacaoDao {
   createTable() {
     const sql = `
     CREATE TABLE IF NOT EXISTS ${this.nomeTabela} (
-      id        INTEGER PRIMARY KEY AUTOINCREMENT,
-      codigo    TEXT NOT NULL,
+      id        INTEGER PRIMARY KEY AUTO_INCREMENT,
+      codigo    VARCHAR(255) NOT NULL,
       nome      TEXT NOT NULL,
       descricao TEXT NOT NULL,
-      senha     TEXT NOT NULL,
-      inicio    TEXT NOT NULL,
-      termino   TEXT NOT NULL,
+      senha     VARCHAR(255) NOT NULL,
+      inicio    DATETIME NOT NULL,
+      termino   DATETIME NOT NULL,
       resultado TEXT
     )`;
     return this.dao.run(sql);
@@ -37,8 +37,7 @@ class VotacaoDao {
   update(id, codigo, nome, descricao, senha, inicio, termino) {
     return this.dao.run(
       `UPDATE ${this.nomeTabela}
-       SET --codigo = ?,
-           nome = ?,
+       SET nome = ?,
            descricao = ?,
            senha = ?,
            inicio = ?,
@@ -53,7 +52,7 @@ class VotacaoDao {
   }
 
   getById(id) {
-    return this.dao.get(`SELECT * FROM ${this.nomeTabela} WHERE id = ?`, [id]);
+    return this.dao.get(`SELECT *, DATE_FORMAT(inicio, '%Y-%m-%dT%H:%i') as inicioF, DATE_FORMAT(termino, '%Y-%m-%dT%H:%i') as terminoF FROM ${this.nomeTabela} WHERE id = ?`, [id]);
   }
 
   getAll() {
@@ -80,7 +79,7 @@ class VotacaoDao {
       FROM      Votacao v
        JOIN     Participante p
        ON       p.votacaoid = v.id
-       WHERE    v.inicio BETWEEN strftime('%Y-%m-%d', 'now', '-1 month', 'localtime') AND strftime('%Y-%m-%d', 'now', '+1 month', 'localtime')
+       WHERE    v.inicio BETWEEN DATE_ADD(CONVERT_TZ(NOW(), @@session.time_zone, '-3:00'), INTERVAL -1 MONTH) AND DATE_ADD(CONVERT_TZ(NOW(), @@session.time_zone, '-3:00'), INTERVAL +1 MONTH)
        AND      p.identificacao = ?
        ORDER BY v.inicio`,
       [identificacao]
@@ -89,7 +88,7 @@ class VotacaoDao {
 
   getResultado(votacaoid) {
     return this.dao.get(
-      `SELECT json_extract(v.resultado, '$') as resultado, strftime('%Y-%m-%d %H-%M','now', 'localtime') > strftime('%Y-%m-%d %H-%M', v.termino) as encerrado
+      `SELECT v.resultado, CONVERT_TZ(NOW(), @@session.time_zone, '-3:00') > v.termino as encerrado
        FROM Votacao v
        WHERE  id = ?`,
       [votacaoid]
@@ -99,11 +98,20 @@ class VotacaoDao {
   updateResultado(id, resultado) {
     return this.dao.run(
       `UPDATE ${this.nomeTabela}
-       SET resultado = json(?)
+       SET resultado = ?
       WHERE id = ?`,
       [resultado, id]
     );
   }
+
+  getTotalVotantes(votacaoId) {
+    return this.dao.get(`
+    SELECT COUNT(*) AS total
+    FROM   Participante
+    WHERE  votacaoId = ?
+    AND    votou = 1;`, [votacaoId]);
+  }
+
 }
 
 module.exports = VotacaoDao;

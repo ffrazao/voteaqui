@@ -2,7 +2,8 @@ export class Participante {
   public id: number;
   public identificacao: string;
   public nome: string;
-  public contato: string;
+  public telefone: string;
+  public email: string;
   public senha: string;
   public votou = false;
   constructor() {

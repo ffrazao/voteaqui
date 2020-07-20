@@ -49,6 +49,10 @@ class VotacaoBo {
     var result = null;
     var registro = await this.dao.getById(id);
     if (registro) {
+      registro.inicio = registro.inicioF;
+      registro.termino = registro.terminoF;
+      delete registro.inicioF;
+      delete registro.terminoF;
       result = registro;
       result.pautaLista = await this.pautaBo.getByVotacaoId(result.id);
       result.participanteLista = await this.participanteBo.getByVotacaoId(
@@ -162,7 +166,7 @@ class VotacaoBo {
     if (!result.resultado) {
       new Promise(async (resolve, reject) => {
         try {
-          this.dbDao.db.exec("BEGIN");
+          getConexaoMySql().query("BEGIN");
           console.log("Início apuração");
           var votacao = await this.restore(votacaoId);
           const resultadoJson = {
@@ -193,12 +197,9 @@ class VotacaoBo {
           }
 
           // votos
-          var votos = await this.votoBo.getByVotacaoCodigo(
-            resultadoJson.codigo
-          );
+          var votos = await this.votoBo.getByVotacaoId(votacaoId);
           for (const voto of votos) {
             var votoJson = JSON.parse(voto.valor);
-            console.log("\n\nvoto", votoJson);
             for (const p of votoJson.pautaLista) {
               for (const o of p.opcaoLista) {
                 var valor = o.valor;
@@ -216,27 +217,34 @@ class VotacaoBo {
             }
           }
           // ordenar os votos
-          // resultadoJson.pautaLista.forEach(p => p.opcao = p.opcaoLista.sort((a, b) => (a.valor.S < b.a.valor.S)  ? 1 : -1));
+          resultadoJson.pautaLista.forEach((p) => {
+            p.opcao = p.opcaoLista.sort((a, b) => {
+              console.log("a = b", a, b);
+              return a.valor.N > b.valor.N ? 1 : -1;
+            });
+            p.opcao = p.opcaoLista.sort((a, b) => {
+              console.log("a = b", a, b);
+              return a.valor.S < b.valor.S ? 1 : -1;
+            });
+          });
 
           // participantes
-          var votantes = 0;
-          for (var participante of votacao.participanteLista) {
-            if (participante.votou) {
-              votantes++;
-            }
-          }
+          var votantes = await this.dao.getTotalVotantes(votacaoId);
+          console.log("==>>> votantes ===>>> ", votantes.total);
+
           var result = {
             participantes: votacao.participanteLista.length,
-            votantes,
+            votantes: votantes.total,
             resultado: resultadoJson,
           };
 
           console.log(result);
           await this.dao.updateResultado(votacaoId, JSON.stringify(result));
           resolve(true);
-          this.dbDao.db.exec("COMMIT");
+
+          getConexaoMySql().query("COMMIT");
         } catch (e) {
-          this.dbDao.db.exec("ROLLBACK");
+          getConexaoMySql().query("ROLLBACK");
           reject(e);
           throw e;
         }

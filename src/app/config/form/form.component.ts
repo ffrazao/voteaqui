@@ -17,9 +17,13 @@ import { Votacao } from './../../modelo/entidade/votacao';
 })
 export class FormComponent implements OnInit {
 
-  id: number;
-  entidade: Votacao;
-  frm: FormGroup = this.carregar(new Votacao());
+  public id: number;
+  public entidade: Votacao = null;
+  public frm: FormGroup = this.carregar(new Votacao());
+
+  public filtro = '';
+  public filtroTexto = '';
+  public selecionaTodos = false;
 
   constructor(
     private fb: FormBuilder,
@@ -37,13 +41,13 @@ export class FormComponent implements OnInit {
     this._route.params.subscribe(p => {
       this.id = p.id;
       this._route.data.subscribe((info) => {
-          this.entidade = info.dados;
-          if (this.id && (prompt('Digite a senha de acesso') !== this.entidade.senha)) {
-            this.mensagem.erro('Senha inválida');
-            this._router.navigate(['/config']);
-          }
-          this.frm = this.carregar(this.entidade);
-        });
+        this.entidade = info.dados;
+        if (this.id && (prompt('Digite a senha de acesso') !== this.entidade.senha)) {
+          this.mensagem.erro('Senha inválida');
+          this._router.navigate(['/config']);
+        }
+        this.frm = this.carregar(this.entidade);
+      });
     });
 
   }
@@ -119,7 +123,8 @@ export class FormComponent implements OnInit {
       id: [valor.id, []],
       identificacao: [valor.identificacao, [Validators.required]],
       nome: [valor.nome, [Validators.required]],
-      contato: [valor.contato, [Validators.required]],
+      telefone: [valor.telefone, []],
+      email: [valor.email, []],
       senha: [valor.senha, [Validators.required]],
       votou: [valor.votou, []],
     });
@@ -191,12 +196,13 @@ export class FormComponent implements OnInit {
     arquivo.onloadend = (e) => {
       (this.frm.get('participanteLista') as FormArray).clear();
       const linhas = (arquivo.result as string).split(/\r\n|\n/);
-      let identificacao = 0;
-      let nome = 0;
-      let contato = 0;
+      let identificacao = -1;
+      let nome = -1;
+      let telefone = -1;
+      let email = -1;
       linhas.forEach(l => {
         const colunas = l.split(/;/);
-        if (identificacao === 0) {
+        if (identificacao === -1) {
           for (let p = 0; p < colunas.length; p++) {
             if (colunas[p] === 'identificacao') {
               identificacao = p;
@@ -204,15 +210,19 @@ export class FormComponent implements OnInit {
             if (colunas[p] === 'nome') {
               nome = p;
             }
-            if (colunas[p] === 'contato') {
-              contato = p;
+            if (colunas[p] === 'telefone') {
+              telefone = p;
+            }
+            if (colunas[p] === 'email') {
+              email = p;
             }
           }
         } else {
           const participante = new Participante();
-          participante.identificacao = colunas[identificacao];
-          participante.nome = colunas[nome];
-          participante.contato = colunas[contato];
+          participante.identificacao = identificacao < 0 ? null : colunas[identificacao];
+          participante.nome = nome < 0 ? null : colunas[nome];
+          participante.telefone = telefone < 0 ? null : this.formataTelefone1(colunas[telefone]);
+          participante.email = email < 0 ? null : colunas[email];
           const reg = this.criarParticipante(participante);
           (this.frm.get('participanteLista') as FormArray).push(reg);
         }
@@ -222,26 +232,50 @@ export class FormComponent implements OnInit {
     arquivo.readAsText(event.target.files[0]);
   }
 
-  enviarLink(votacao: Votacao, participante: Participante): void {
-    const mensagem =
-`Olá ${participante.nome}!,
+  enviarLink(meio: string, votacao: Votacao, participante: Participante): void {
+    let mensagem = null;
+
+    let url = '';
+    if (meio === 'whatsapp') {
+      mensagem =
+        `Olá ${participante.nome}!,
 
 Encaminhamos o link ${environment.API_URL}/${participante.identificacao}/${votacao.id}
 e a sua senha *${participante.senha}*
-para votação *_${votacao.nome}_*
+para a votação *_${votacao.nome}_*
 
 ATENÇÃO: memorize esta senha, ela será solicitada durante o processo de votação`;
+      url = `https://api.whatsapp.com/send?phone=${participante.telefone}&text=${encodeURI(mensagem)}&preview_url=true`;
+    } else {
+      mensagem =
+        `Olá ${participante.nome}!,
 
-    const url = `https://api.whatsapp.com/send?phone=${participante.contato}&text=${encodeURI(mensagem)}&preview_url=true`;
+Encaminhamos o link ${environment.API_URL}/${participante.identificacao}/${votacao.id}
+e a sua senha ${participante.senha}
+para a votação ${votacao.nome}
+
+ATENÇÃO: memorize esta senha, ela será solicitada durante o processo de votação`;
+      url = `mailto:${participante.email}?&subject=${votacao.nome}&body=${encodeURI(mensagem)}`;
+    }
+    console.log(`enviando url ${url}`);
     const win = window.open(url, '_blank');
   }
 
-  enviarLinkTodos(): void {
+  enviarLinkTodos(meio: string): void {
+    const tempo = 2 * 1000;
+
     const votacao = this.frm.value;
     const lista = this.frm.get('participanteLista').value;
-    if (lista && lista.length && confirm('Confirme o envio')) {
+    if (lista && lista.length && confirm(`Confirma o envio do link, a todos os participantes selecionados, por ${meio}?`)) {
       lista.forEach((v: Participante) => {
-        this.enviarLink(votacao, v);
+        if (v['selecao']) {
+          new Promise((resolve, reject) => {
+            setTimeout(() => {
+              this.enviarLink(meio, votacao, v);
+              resolve(true);
+            }, tempo);
+          }).then(r => console.log('Enviado ...', v.nome));
+        }
       });
     }
   }
@@ -273,6 +307,42 @@ ATENÇÃO: memorize esta senha, ela será solicitada durante o processo de vota�
       });
 
     }
+  }
+
+  filtrar(participante: any, params): boolean {
+    return (!params[0] || params[0].trim().length === 0 ||
+      (params[0] === 'V' && participante.value.votou) ||
+      (params[0] === 'N' && !participante.value.votou)) &&
+      (!params[1] || params[1].trim().length === 0 ||
+        participante.value.nome.trim().toLowerCase().indexOf(params[1].toLowerCase()) >= 0 ||
+        participante.value.identificacao.trim().toLowerCase().indexOf(params[1].toLowerCase()) >= 0
+      );
+  }
+
+  seleciona(event): void {
+    this.frm.value.participanteLista.forEach(p => p.selecao = !this.selecionaTodos);
+  }
+
+  totalSelecao(): number {
+    let total = 0;
+    this.frm.value.participanteLista.forEach(p => total = total + (p.selecao ? 1 : 0));
+    return total;
+  }
+
+  formataTelefone(): void {
+    this.frm.value.participanteLista.forEach(p => p.telefone = this.formataTelefone1(p.telefone));
+  }
+
+  formataTelefone1(numero: string): string {
+    if (numero && numero.trim() && numero.trim().length < 13) {
+      numero = numero.replace(/[^0-9]/gi, '');
+      if (numero.length <= 9) {
+        numero = '5561' + numero;
+      } else {
+        numero = '55' + numero;
+      }
+    }
+    return numero;
   }
 
 }

@@ -1,4 +1,4 @@
-const ParticipanteDao = require("../dao/participante.dao");
+const ParticipanteDao = require('../dao/participante.dao');
 
 class ParticipanteBo {
   constructor(dao) {
@@ -8,19 +8,20 @@ class ParticipanteBo {
 
   novo(registro) {
     registro = {};
-    console.log("novo participante", registro);
+    console.log('novo participante', registro);
     return registro;
   }
 
   // API Participante CREATE
   async create(registro, votacaoId) {
-    console.log("criar participante", registro);
+    console.log('criar participante', registro);
 
     registro.id = (
       await this.dao.create(
         registro.identificacao,
         registro.nome,
-        registro.contato,
+        registro.telefone,
+        registro.email,
         registro.senha,
         false,
         votacaoId
@@ -33,7 +34,7 @@ class ParticipanteBo {
 
   // API Participante RESTORE
   async restore(id) {
-    console.log("carregar participante", id);
+    console.log('carregar participante', id);
     var result = null;
     var registro = await this.dao.getById(id);
     if (registro) {
@@ -44,7 +45,7 @@ class ParticipanteBo {
 
   // API Votacao UPDATE
   async update(registro, id) {
-    console.log("atualizar participante", registro);
+    console.log('atualizar participante', registro);
 
     // resgatar registro anterior
     var anterior = await this.dao.getById(registro.id);
@@ -57,7 +58,8 @@ class ParticipanteBo {
       registro.id,
       registro.identificacao,
       registro.nome,
-      registro.contato,
+      registro.telefone,
+      registro.email,
       registro.senha,
       false,
       id

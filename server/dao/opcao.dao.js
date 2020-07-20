@@ -8,8 +8,8 @@ class OpcaoDao {
   createTable() {
     const sql = `
     CREATE TABLE IF NOT EXISTS ${this.nomeTabela} (
-      id         INTEGER PRIMARY KEY AUTOINCREMENT,
-      codigo     TEXT NOT NULL,
+      id         INTEGER PRIMARY KEY AUTO_INCREMENT,
+      codigo     VARCHAR(255) NOT NULL,
       nome       TEXT NOT NULL,
       descricao  TEXT NOT NULL,
       pautaId    INTEGER NOT NULL,
@@ -34,8 +34,7 @@ class OpcaoDao {
   update(id, codigo, nome, descricao, pautaId) {
     return this.dao.run(
       `UPDATE ${this.nomeTabela}
-       SET --codigo = ?,
-           nome = ?,
+       SET nome = ?,
            descricao = ?,
            pautaId = ?
       WHERE id = ?`,

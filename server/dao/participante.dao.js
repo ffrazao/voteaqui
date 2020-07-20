@@ -1,5 +1,5 @@
 class ParticipanteDao {
-  nomeTabela = "Participante";
+  nomeTabela = 'Participante';
 
   constructor(dao) {
     this.dao = dao;
@@ -8,10 +8,11 @@ class ParticipanteDao {
   createTable() {
     const sql = `
     CREATE TABLE IF NOT EXISTS ${this.nomeTabela} (
-      id            INTEGER PRIMARY KEY AUTOINCREMENT,
-      identificacao TEXT NOT NULL,
+      id            INTEGER PRIMARY KEY AUTO_INCREMENT,
+      identificacao VARCHAR(255) NOT NULL,
       nome          TEXT NOT NULL,
-      contato       TEXT NOT NULL,
+      telefone      TEXT,
+      email         TEXT,
       senha         TEXT NOT NULL,
       votou         BOOLEAN NOT NULL,
       votacaoId     INTEGER NOT NULL,
@@ -21,31 +22,33 @@ class ParticipanteDao {
     return this.dao.run(sql);
   }
 
-  create(identificacao, nome, contato, senha, votou, votacaoId) {
+  create(identificacao, nome, telefone, email, senha, votou, votacaoId) {
     return this.dao.run(
       `INSERT INTO ${this.nomeTabela} (
         identificacao,
         nome,
-        contato,
+        telefone,
+        email,
         senha,
         votou,
         votacaoId)
-      VALUES (?, ?, ?, ?, ?, ?)`,
-      [identificacao, nome, contato, senha, votou, votacaoId]
+      VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [identificacao, nome, telefone, email, senha, votou, votacaoId]
     );
   }
 
-  update(id, identificacao, nome, contato, senha, votou, votacaoId) {
+  update(id, identificacao, nome, telefone, email, senha, votou, votacaoId) {
     return this.dao.run(
       `UPDATE ${this.nomeTabela}
        SET identificacao = ?,
            nome = ?,
-           contato = ?,
+           telefone = ?,
+           email = ?,
            senha = ?,
            votou = ?,
            votacaoId = ?
       WHERE id = ?`,
-      [identificacao, nome, contato, senha, votou, votacaoId, id]
+      [identificacao, nome, telefone, email, senha, votou, votacaoId, id]
     );
   }
 
@@ -82,8 +85,8 @@ class ParticipanteDao {
       FROM   ${this.nomeTabela} p
       JOIN   Votacao v
       ON     v.id = p.votacaoId
-      WHERE  (strftime('%Y-%m-%d %H-%M','now', 'localtime') BETWEEN strftime('%Y-%m-%d %H-%M', v.inicio) AND strftime('%Y-%m-%d %H-%M', v.termino))
-      AND    p.votou = false
+      WHERE  (CONVERT_TZ(NOW(), @@session.time_zone, '-3:00') BETWEEN v.inicio AND v.termino)
+      AND    p.votou = 0
       AND    p.identificacao = ?
       AND    v.id = ?`,
       [identificacao, votacaoId]
@@ -93,7 +96,7 @@ class ParticipanteDao {
   votar(id) {
     return this.dao.run(
       `UPDATE ${this.nomeTabela}
-       SET votou = true
+       SET votou = 1
       WHERE id = ?`,
       [id]
     );

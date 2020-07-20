@@ -3,14 +3,14 @@ const cors = require('cors');
 const path = require('path');
 const nomeApp = process.env.npm_package_name;
 
-const dbDao = require('./inicia-conexao-db.dao');
+const conexaoDbDao = require('./inicia-conexao-db.dao');
 
 const VotacaoBo = require('./bo/votacao.bo');
-const votacaoBo = new VotacaoBo(dbDao);
+const votacaoBo = new VotacaoBo(conexaoDbDao);
 const ParticipanteBo = require('./bo/participante.bo');
-const participanteBo = new ParticipanteBo(dbDao);
+const participanteBo = new ParticipanteBo(conexaoDbDao);
 const VotoBo = require('./bo/voto.bo');
-const votoBo = new VotoBo(dbDao);
+const votoBo = new VotoBo(conexaoDbDao);
 
 const app = express();
 
@@ -37,13 +37,13 @@ app.post('/api/votacao/novo', async function (req, res) {
 app.post('/api/votacao', async function (req, res) {
   var registro = req.body;
   try {
-    dbDao.db.exec('BEGIN');
+    getConexaoMySql().query('BEGIN');
     var result = await votacaoBo.create(registro);
     res.write(`${result}`);
-    dbDao.db.exec('COMMIT');
+    getConexaoMySql().query('COMMIT');
   } catch (e) {
     // rollback
-    dbDao.db.exec('ROLLBACK');
+    getConexaoMySql().query('ROLLBACK');
     var msg = `Erro ao inserir registro (${e})`;
     console.log(msg);
     res.status(500);
@@ -73,13 +73,13 @@ app.get('/api/votacao/:id', async function (req, res) {
 app.put('/api/votacao', async function (req, res) {
   var registro = req.body;
   try {
-    dbDao.db.exec('BEGIN');
+    getConexaoMySql().query('BEGIN');
     var result = await votacaoBo.update(registro);
     res.write(`${result}`);
-    dbDao.db.exec('COMMIT');
+    getConexaoMySql().query('COMMIT');
   } catch (e) {
     // rollback
-    dbDao.db.exec('ROLLBACK');
+    getConexaoMySql().query('ROLLBACK');
     var msg = `Erro ao atualizar registro (${e})`;
     console.log(msg);
     res.status(500);
@@ -196,7 +196,7 @@ app.post('/api/voto/novo', async function (req, res) {
 app.post('/api/voto/:identificacao/:votacaoId/:senha', async function (req, res) {
   var registro = req.body;
   try {
-    dbDao.db.exec('BEGIN');
+    getConexaoMySql().query('BEGIN');
     var participante = await participanteBo.getPodeVotarByIdentificacaoAndVotacaoId(req.params.identificacao, req.params.votacaoId);
     if (!participante) {
       throw new Error('Voto não autorizado!');
@@ -207,10 +207,10 @@ app.post('/api/voto/:identificacao/:votacaoId/:senha', async function (req, res)
     var result = await votoBo.create(registro);
     await participanteBo.votar(participante.id);
     res.write(`${result}`);
-    dbDao.db.exec('COMMIT');
+    getConexaoMySql().query('COMMIT');
   } catch (e) {
     // rollback
-    dbDao.db.exec('ROLLBACK');
+    getConexaoMySql().query('ROLLBACK');
     var msg = `Erro ao inserir registro (${e})`;
     console.log(msg);
     res.status(500);
