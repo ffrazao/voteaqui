@@ -14,7 +14,7 @@ export class PainelComponent implements OnInit {
 
   public entidade = null;
 
-  public filtro = 'E';
+  public filtro = '';
   public filtroTexto = '';
 
   constructor(

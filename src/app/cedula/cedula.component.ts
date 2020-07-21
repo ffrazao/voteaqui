@@ -91,10 +91,16 @@ export class CedulaComponent implements OnInit {
       const votoJson = { codigo: this.entidade.votacaoLista[0].codigo, pautaLista: [] };
 
       for (const pauta of this.entidade.votacaoLista[0].pautaLista) {
-        const pautaJson = { codigo: pauta.codigo, opcaoLista: [] };
-        for (const opcao of pauta.opcaoLista) {
-          const opcaoJson = { codigo: opcao.codigo, valor: opcao.voto };
-          pautaJson.opcaoLista.push(opcaoJson);
+        const pautaJson = { codigo: pauta.codigo, opcaoLista: [], nulo: false };
+        if (pauta.nulo) {
+          pautaJson.nulo = true;
+        } else {
+          for (const opcao of pauta.opcaoLista) {
+            const opcaoJson = { codigo: opcao.codigo, valor: opcao.voto };
+            if (opcao.voto && opcao.voto.trim().length) {
+              pautaJson.opcaoLista.push(opcaoJson);
+            }
+          }
         }
         votoJson.pautaLista.push(pautaJson);
       }

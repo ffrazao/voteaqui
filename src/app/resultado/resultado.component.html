@@ -64,6 +64,8 @@
           </tr>
         </thead>
         <tbody>
+          <tr><td colspan="4"><b>Votos Nulos:</b> {{pauta.nulos}}</td></tr>
+          <tr><td colspan="4"><b>Votos Em Branco:</b> {{pauta.brancos}}</td></tr>
           <tr *ngFor="let opcao of pauta.opcaoLista; let j = index"
             [class]="opcao.voto === 'S'? 'table-success' : opcao.voto === 'N' ? 'table-danger': ''">
             <td>{{i+1}}.{{j+1}}.</td>
@@ -90,13 +92,13 @@
                       <td>{{(opcao.valor.S / entidade.participantes) * 100 | number}} %</td>
                       <td>{{(opcao.valor.S / entidade.votantes) * 100 | number}} %</td>
                     </tr>
-                    <tr class="">
+                    <tr class="" *ngIf="false">
                       <th>Em Branco</th>
                       <td>{{opcao.valor.branco}}</td>
                       <td>{{(opcao.valor.branco / entidade.participantes) * 100 | number}} %</td>
                       <td>{{(opcao.valor.branco / entidade.votantes) * 100 | number}} %</td>
                     </tr>
-                    <tr class="table-danger">
+                    <tr class="table-danger" *ngIf="pauta.opcaoLista.length === 1">
                       <th>Não</th>
                       <td>{{opcao.valor.N}}</td>
                       <td>{{(opcao.valor.N / entidade.participantes) * 100 | number}} %</td>

@@ -38,7 +38,7 @@
         </thead>
         <tbody>
           <ng-template ngFor let-opcao [ngForOf]="pauta.opcaoLista" let-j="index">
-            <tr [class]="opcao.voto === 'S'? 'table-success' : opcao.voto === 'N' ? 'table-danger': ''">
+            <tr [class]="opcao.voto === 'S'? 'table-success' : opcao.voto === 'N' ? 'table-danger': ''" *ngIf="!pauta.nulo">
               <td>{{i+1}}.{{j+1}}.</td>
               <td>{{opcao.nome}}</td>
               <td>
@@ -46,7 +46,7 @@
                 <!-- <pre>{{opcao.descricao}}</pre> -->
               </td>
             </tr>
-            <tr [class]="opcao.voto === 'S'? 'table-success' : opcao.voto === 'N' ? 'table-danger': ''">
+            <tr [class]="opcao.voto === 'S'? 'table-success' : opcao.voto === 'N' ? 'table-danger': ''" *ngIf="!pauta.nulo">
               <td>&nbsp;</td>
               <td colspan="2">
                 <div class="d-inline-flex justify-content-around">
@@ -65,7 +65,7 @@
                       <label class="custom-control-label" [for]="'votoB_' + i + '_' + j">Em Branco</label>
                     </div>
                   </div>
-                  <div class="btn btn-danger">
+                  <div class="btn btn-danger" *ngIf="pauta.opcaoLista.length === 1">
                     <div class="custom-control custom-radio custom-control-inline">
                       <input type="radio" [(ngModel)]="opcao.voto" [id]="'votoN_' + i + '_' + j"
                         [name]="'voto_' + i + '_' + j" class="custom-control-input" value="N">
@@ -111,6 +111,18 @@
               </td>
             </tr>
           </ng-template>
+          <tr>
+            <td colspan="4">
+              <div class="alert " [class]="pauta.nulo ? 'alert-danger' : 'alert-warning'">
+                <div class="custom-control custom-checkbox ">
+                  <input type="checkbox" class="custom-control-input" [id]="'anularItem_' + i" [name]="'anularItem_' + i"
+                    [(ngModel)]="pauta.nulo">
+                  <label class="custom-control-label" [for]="'anularItem_' + i" *ngIf="pauta.nulo">Votar NULO para <b>({{pauta.nome}})</b></label>
+                  <label class="custom-control-label" [for]="'anularItem_' + i" *ngIf="!pauta.nulo">Anular meu voto para <b>({{pauta.nome}})</b></label>
+                </div>
+              </div>
+            </td>
+          </tr>
         </tbody>
         <tr>
           <td colspan="5" class="text-right table-light">Escolhas: {{escolhas(pauta)}} / {{pauta.quantidadeEscolha}}
@@ -138,13 +150,16 @@
   <ol class="list-group p-3 m-3">
     <ng-template ngFor let-pauta [ngForOf]="entidade.votacaoLista[0].pautaLista" let-i="index">
       <li class="list-group-item list-group-item-primary"><b>{{pauta.nome}}</b></li>
-      <ol>
+      <ol *ngIf="!pauta.nulo">
         <li class="pt-1 mt-1 pb-2 mb-2"
           [class]="opcao.voto === 'S'? 'list-group-item-success' : opcao.voto === 'N' ? 'list-group-item-danger': ''"
           *ngFor="let opcao of pauta.opcaoLista | callback: votoSimNao ; let j = index">
           {{opcao.nome}} => <b><u>{{opcao.voto === 'S'? 'SIM' : opcao.voto === 'N' ? 'NÃO': ''}}</u></b>
         </li>
         <li *ngIf="!(pauta.opcaoLista | callback: votoSimNao ).length">EM BRANCO</li>
+      </ol>
+      <ol *ngIf="pauta.nulo">
+        <li class="pt-1 mt-1 pb-2 mb-2">VOTO ANULADO</li>
       </ol>
     </ng-template>
   </ol>

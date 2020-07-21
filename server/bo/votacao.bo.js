@@ -183,6 +183,8 @@ class VotacaoBo {
               nome: pauta.nome,
               descricao: pauta.descricao,
               opcaoLista: [],
+              nulos: 0,
+              brancos: 0,
             };
             for (const opcao of pauta.opcaoLista) {
               const opcaoJson = {
@@ -201,36 +203,46 @@ class VotacaoBo {
           for (const voto of votos) {
             var votoJson = JSON.parse(voto.valor);
             for (const p of votoJson.pautaLista) {
-              for (const o of p.opcaoLista) {
-                var valor = o.valor;
-                var r = resultadoJson.pautaLista
-                  .find((pl) => pl.codigo === p.codigo)
-                  .opcaoLista.find((ol) => ol.codigo === o.codigo);
-                if (!valor) {
-                  valor = "branco";
+              var pr = resultadoJson.pautaLista.find(
+                (pl) => pl.codigo === p.codigo
+              );
+              console.log(`p.opcaoLista ===> [${JSON.stringify(p.opcaoLista)}]`);
+              if (p.nulo) {
+                pr.nulos++;
+              } else {
+                console.log(`um branco ${JSON.stringify(pr)}`);
+                if (!p.opcaoLista || !p.opcaoLista.length) {
+                  pr.brancos++;
+                } else {
+                  for (const o of p.opcaoLista) {
+                    var valor = o.valor;
+                    var r = resultadoJson.pautaLista
+                      .find((pl) => pl.codigo === p.codigo)
+                      .opcaoLista.find((ol) => ol.codigo === o.codigo);
+                    if (!valor) {
+                      valor = "branco";
+                    }
+                    if (!r.valor[valor]) {
+                      r.valor[valor] = 0;
+                    }
+                    r.valor[valor]++;
+                  }
                 }
-                if (!r.valor[valor]) {
-                  r.valor[valor] = 0;
-                }
-                r.valor[valor]++;
               }
             }
           }
           // ordenar os votos
           resultadoJson.pautaLista.forEach((p) => {
             p.opcao = p.opcaoLista.sort((a, b) => {
-              console.log("a = b", a, b);
               return a.valor.N > b.valor.N ? 1 : -1;
             });
             p.opcao = p.opcaoLista.sort((a, b) => {
-              console.log("a = b", a, b);
               return a.valor.S < b.valor.S ? 1 : -1;
             });
           });
 
           // participantes
           var votantes = await this.dao.getTotalVotantes(votacaoId);
-          console.log("==>>> votantes ===>>> ", votantes.total);
 
           var result = {
             participantes: votacao.participanteLista.length,
@@ -238,7 +250,7 @@ class VotacaoBo {
             resultado: resultadoJson,
           };
 
-          console.log(result);
+          console.log('resultado ===> ', JSON.stringify(result));
           await this.dao.updateResultado(votacaoId, JSON.stringify(result));
           resolve(true);
 
