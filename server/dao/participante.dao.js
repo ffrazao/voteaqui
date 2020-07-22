@@ -33,7 +33,7 @@ class ParticipanteDao {
         votou,
         votacaoId)
       VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [identificacao, nome, telefone, email, senha, votou, votacaoId]
+      [identificacao, nome, telefone, email, senha, 0, votacaoId]
     );
   }
 
@@ -44,11 +44,9 @@ class ParticipanteDao {
            nome = ?,
            telefone = ?,
            email = ?,
-           senha = ?,
-           votou = ?,
            votacaoId = ?
       WHERE id = ?`,
-      [identificacao, nome, telefone, email, senha, votou, votacaoId, id]
+      [identificacao, nome, telefone, email, votacaoId, id]
     );
   }
 

@@ -109,7 +109,7 @@ class VotacaoDao {
     SELECT COUNT(*) AS total
     FROM   Participante
     WHERE  votacaoId = ?
-    AND    votou = 1;`, [votacaoId]);
+    AND    votou = 1`, [votacaoId]);
   }
 
 }

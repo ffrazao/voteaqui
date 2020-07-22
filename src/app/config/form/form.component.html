@@ -89,7 +89,8 @@
             </td>
             <td>
               <label *ngIf="!pauta['editando']">
-                <pre>{{pauta.value.descricao}}</pre></label>
+                <div [innerHTML]="pauta.value.descricao"></div>
+              </label>
               <div class="form-group" *ngIf="pauta['editando']">
                 <mat-form-field appearance="fill">
                   <mat-label>Descrição</mat-label>
@@ -161,7 +162,8 @@
                       </td>
                       <td>
                         <label *ngIf="!opcao['editando']">
-                          <pre>{{opcao.value.descricao}}</pre></label>
+                          <div [innerHTML]="opcao.value.descricao"></div>
+                        </label>
                         <div class="form-group" *ngIf="opcao['editando']">
                           <mat-form-field appearance="fill">
                             <mat-label>Descrição</mat-label>

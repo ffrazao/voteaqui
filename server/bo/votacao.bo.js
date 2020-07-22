@@ -206,7 +206,7 @@ class VotacaoBo {
               var pr = resultadoJson.pautaLista.find(
                 (pl) => pl.codigo === p.codigo
               );
-              console.log(`p.opcaoLista ===> [${JSON.stringify(p.opcaoLista)}]`);
+              console.log(`p.opcaoLista ===> ${JSON.stringify(p.opcaoLista)} leng = ${p.opcaoLista}`);
               if (p.nulo) {
                 pr.nulos++;
               } else {
