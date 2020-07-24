@@ -34,12 +34,14 @@ export class ConfigService {
     return this.http.get(`${environment.API_URL}/api/votacao`);
   }
 
-  public enviarEmail(mensagem: {
+  public enviarCedula(mensagem: {
+    senha: string,
+    meio: string,
     votacao: { id: number, nome: string },
     API_URL: string,
     participanteIdLista: number[]
   }): Observable<any> {
-    return this.http.post(`${environment.API_URL}/api/participante/email`, mensagem);
+    return this.http.post(`${environment.API_URL}/api/votacao/cedula`, mensagem);
   }
 
   public alterarSenha(id: any, senhas: any): Observable<any> {

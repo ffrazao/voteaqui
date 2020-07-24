@@ -3,14 +3,16 @@ const PautaBo = require("./pauta.bo");
 const ParticipanteBo = require("./participante.bo");
 const VotoBo = require("./voto.bo");
 require("../util/funcoes");
+const bcrypt = require("bcrypt");
 
 class VotacaoBo {
-  constructor(dao) {
+  constructor(dao, transporterEmail) {
     this.dbDao = dao;
     this.dao = new VotacaoDao(this.dbDao);
     this.pautaBo = new PautaBo(this.dbDao);
     this.participanteBo = new ParticipanteBo(this.dbDao);
     this.votoBo = new VotoBo(this.dbDao);
+    this.transporterEmail = transporterEmail;
   }
 
   novo(registro) {
@@ -24,6 +26,12 @@ class VotacaoBo {
   // API Votacao CREATE
   async create(registro) {
     console.log("criar votacao", registro);
+
+    if (!registro.senha || !registro.senha.length) {
+      throw new Error("Senha nula não permitida");
+    }
+    // encryptar a senha
+    registro.senha = bcrypt.hashSync(registro.senha, 10);
 
     registro.id = (
       await this.dao.create(
@@ -53,6 +61,7 @@ class VotacaoBo {
       registro.termino = registro.terminoF;
       delete registro.inicioF;
       delete registro.terminoF;
+      delete registro.senha;
       result = registro;
       result.pautaLista = await this.pautaBo.getByVotacaoId(result.id);
       result.participanteLista = await this.participanteBo.getByVotacaoId(
@@ -206,7 +215,11 @@ class VotacaoBo {
               var pr = resultadoJson.pautaLista.find(
                 (pl) => pl.codigo === p.codigo
               );
-              console.log(`p.opcaoLista ===> ${JSON.stringify(p.opcaoLista)} leng = ${p.opcaoLista}`);
+              console.log(
+                `p.opcaoLista ===> ${JSON.stringify(p.opcaoLista)} leng = ${
+                  p.opcaoLista
+                }`
+              );
               if (p.nulo) {
                 pr.nulos++;
               } else {
@@ -250,7 +263,7 @@ class VotacaoBo {
             resultado: resultadoJson,
           };
 
-          console.log('resultado ===> ', JSON.stringify(result));
+          console.log("resultado ===> ", JSON.stringify(result));
           await this.dao.updateResultado(votacaoId, JSON.stringify(result));
           resolve(true);
 
@@ -273,19 +286,72 @@ class VotacaoBo {
   }
 
   async alterarSenha(votacaoId, senhaAtual, senhaNova) {
-    const votacao = await this.restore(votacaoId);
-    if (!votacao) {
-      throw new Error('Votação não encontrada!');
+    if (!await this.validaSenha(votacaoId, senhaAtual)) {
+      throw new Error("Senha inválida!");
     }
-    if (senhaAtual !== votacao.senha) {
-      throw new Error('Senha inválida!');
-    }
-    console.log('senhaNova.trim().length', senhaNova.trim().length);
     if (!senhaNova || !senhaNova.trim().length) {
-      throw new Error('Senha nula!');
+      throw new Error("Senha nula!");
     }
-    this.dao.updateSenha(votacaoId, senhaNova);
+    this.dao.updateSenha(votacaoId, bcrypt.hashSync(senhaNova, 10));
     return true;
+  }
+
+  // API Votacao RESTORE
+  async validaSenha(votacaoId, senha) {
+    var registro = await this.dao.getById(votacaoId);
+    return registro && bcrypt.compareSync(senha, registro.senha);
+  }
+
+  async enviarCedula(mensagem) {
+    if (!await this.validaSenha(mensagem.votacao.id, mensagem.senha)) {
+      throw new Error("Senha inválida!");
+    }
+    var resultado = [];
+    for (var id of mensagem.participanteIdLista) {
+      var participante = await this.participanteBo.restore(id, false);
+
+      console.log(`enviando ${mensagem.meio} para ${participante.nome}`);
+
+      if (mensagem.meio === 'whatsapp') {
+        var msg =
+        `Olá ${participante.nome}!,
+
+Encaminhamos o link ${mensagem.API_URL}/${participante.identificacao}/${mensagem.votacao.id}
+e a sua senha *${participante.senha}*
+para a votação *_${mensagem.votacao.nome}_*
+
+ATENÇÃO: memorize esta senha, ela será solicitada durante o processo de votação`;
+
+        resultado.push({
+          url: `https://api.whatsapp.com/send?phone=${participante.telefone}&text=${encodeURI(msg)}&preview_url=true`,
+        });
+      } else {
+        var msg = `<p>Olá ${participante.nome}!,</p>
+        <p></p>
+        <p>Encaminhamos o link <a href="${mensagem.API_URL}/${participante.identificacao}/${mensagem.votacao.id}">${mensagem.API_URL}/${participante.identificacao}/${mensagem.votacao.id}</a></p>
+        <p>e a sua senha <b>${participante.senha}</b></p>
+        <p>para a votação <b><u>${mensagem.votacao.nome}</u></b></p>
+        <p></p>
+        <p>ATENÇÃO: memorize esta senha, ela será solicitada durante o processo de votação</p>`;
+
+        var mailOptions = {
+          from: `voteaqui@gmail.com`,
+          to: `${participante.email}`,
+          subject: `Cédula de Votação`,
+          html: msg,
+        };
+
+        this.transporterEmail.sendMail(mailOptions, function (error, info) {
+          if (error) {
+            console.log(`Erro ao enviar: `, error);
+            break;
+          } else {
+            console.log(`Email sent: ` + info.response);
+          }
+        });
+      }
+    }
+    return resultado;
   }
 }
 

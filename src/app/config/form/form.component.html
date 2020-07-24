@@ -205,10 +205,10 @@
   <h2 class="mt-5 text-info">Participantes</h2>
 
   <input type="file" class="btn btn-secondary btn-sm" (change)="lerArquivo($event)">
-  <button type="button" mat-button class="btn btn-secondary btn-sm" (click)="enviarLinkTodos('whatsapp')"
-    *ngIf="totalSelecao()">Enviar Link por WhatsApp a Todos Selecionados</button>
-  <button type="button" mat-button class="btn btn-secondary btn-sm" (click)="enviarLinkTodos('email')"
-    *ngIf="totalSelecao()">Enviar Link por E-Mail a Todos Selecionados</button>
+  <button type="button" mat-button class="btn btn-secondary btn-sm" (click)="enviarCedula('whatsapp')"
+    *ngIf="totalSelecao()">Enviar Link por <img src="assets/whatsapp.png" style="width: 40px; height: 30px;"></button>
+  <button type="button" mat-button class="btn btn-secondary btn-sm" (click)="enviarCedula('email')"
+    *ngIf="totalSelecao()">Enviar Link por <img src="assets/email.png" style="width: 20px; height: 15px;"></button>
 
   <div class="d-sm-flex justify-content-between border border-secondary">
     <div style="font-size:70%">
@@ -225,7 +225,7 @@
       <div class="custom-control custom-radio custom-control-inline">
         <input type="radio" [(ngModel)]="filtro" [ngModelOptions]="{standalone: true}" id="filtroE" name="filtro"
           class="custom-control-input" value="N">
-        <label class="custom-control-label" for="filtroE">Ainda não votaram</label>
+        <label class="custom-control-label" for="filtroE">Não votaram</label>
       </div>
       <div>
         Exibindo: {{(getLista(frm, 'participanteLista').controls | callback: filtrar: [filtro, filtroTexto]).length}} de
@@ -258,7 +258,6 @@
           <th>Nome</th>
           <th>Telefone</th>
           <th>E-mail</th>
-          <th>Senha</th>
           <th>Votou</th>
           <th>Ação</th>
         </tr>
@@ -311,15 +310,6 @@
             </div>
           </td>
           <td>
-            <label *ngIf="!participante['editando']">****</label>
-            <div class="form-group" *ngIf="participante['editando']">
-              <mat-form-field appearance="fill">
-                <mat-label>Senha</mat-label>
-                <input matInput type="password" formControlName="senha" readonly="true">
-              </mat-form-field>
-            </div>
-          </td>
-          <td>
             <mat-checkbox [checked]="participante.value.votou" [disabled]="true"></mat-checkbox>
           </td>
           <td>
@@ -329,12 +319,6 @@
                   (click)="participanteEditar(participante)">Editar</button>
                 <button type="button" mat-button class="btn btn-secondary btn-sm"
                   (click)="participanteExcluir(frm, i)">Excluir</button>
-                <button type="button" mat-button class="btn btn-secondary btn-sm"
-                  (click)="enviarLink('whatsapp', frm.value, participante.value)">Enviar
-                  Link por WhatsApp</button>
-                <button type="button" mat-button class="btn btn-secondary btn-sm"
-                  (click)="enviarLink('email', frm.value, participante.value)">Enviar
-                  Link por E-mail</button>
               </div>
               <div *ngIf="participante['editando']">
                 <button type="button" mat-button class="btn btn-secondary btn-sm"

@@ -7,9 +7,9 @@ const conexaoDbDao = require("./inicia-conexao-db.dao");
 const conexaoEmail = require("./inicia-conexao-email");
 
 const VotacaoBo = require("./bo/votacao.bo");
-const votacaoBo = new VotacaoBo(conexaoDbDao);
+const votacaoBo = new VotacaoBo(conexaoDbDao, conexaoEmail);
 const ParticipanteBo = require("./bo/participante.bo");
-const participanteBo = new ParticipanteBo(conexaoDbDao, conexaoEmail);
+const participanteBo = new ParticipanteBo(conexaoDbDao);
 const VotoBo = require("./bo/voto.bo");
 const votoBo = new VotoBo(conexaoDbDao);
 
@@ -76,7 +76,7 @@ app.get("/api/votacao/:id/:senha", async function (req, res) {
   try {
     var result = await votacaoBo.restore(req.params.id);
     if (result) {
-      if (result.senha !== req.params.senha) {
+      if (!await votacaoBo.validaSenha(req.params.id, req.params.senha)) {
         var msg = `Senha inválida`;
         res.statusMessage = msg;
         res.sendStatus(500);
@@ -160,7 +160,21 @@ app.put("/api/votacao/:id/alterar-senha/:senhaAtual/:senhaNova", async function 
   }
   res.end();
 });
-
+app.post("/api/votacao/cedula", async function (req, res) {
+  var registro = req.body;
+  try {
+    var result = await votacaoBo.enviarCedula(registro);
+    console.log("cedulas", result);
+    res.write(JSON.stringify(result));
+  } catch (e) {
+    console.log(e);
+    res.status(500);
+    res.statusMessage =
+      "Erro no envio das cédulas [" + JSON.stringify(e) + "]";
+    res.write(res.statusMessage);
+  }
+  res.end();
+});
 
 // API Participante
 
@@ -174,9 +188,6 @@ app.get("/api/participante/:identificacao", async function (req, res) {
       console.log(JSON.stringify(result));
       res.write(JSON.stringify(result));
     } else {
-      // var msg = `Registro não encontrado`;
-      // console.log(msg);
-      // res.sendStatus(404);
       res.write("");
     }
   } catch (e) {
@@ -211,20 +222,6 @@ app.get("/api/participante/:identificacao/:votacao", async function (req, res) {
     res.status(500);
     res.statusMessage = msg;
     res.write(JSON.stringify({ msg }));
-  }
-  res.end();
-});
-app.post("/api/participante/email", async function (req, res) {
-  var registro = req.body;
-  try {
-    var resposta = await participanteBo.enviarEmail(registro);
-    console.log("resposta do email", resposta);
-  } catch (e) {
-    console.log(e);
-    res.status(500);
-    res.statusMessage =
-      "Erro no servidor de e-mails [" + JSON.stringify(e) + "]";
-    res.write(res.statusMessage);
   }
   res.end();
 });

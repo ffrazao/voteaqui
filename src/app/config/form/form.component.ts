@@ -1,4 +1,4 @@
-import { AlterarSenhaComponent } from './../../cedula/alterar-senha/alterar-senha.component';
+import { ConfirmarVotoComponent } from './../../cedula/confirmar-voto/confirmar-voto.component';
 import { Component, OnInit } from '@angular/core';
 import { FormGroup, FormBuilder, Validators, FormArray } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -8,6 +8,7 @@ import { Participante } from './../../modelo/entidade/participante';
 import { Opcao } from './../../modelo/entidade/opcao';
 import { Pauta } from './../../modelo/entidade/pauta';
 import { Votacao } from './../../modelo/entidade/votacao';
+import { AlterarSenhaComponent } from './../../cedula/alterar-senha/alterar-senha.component';
 import { MensagemService } from './../../comum/service/mensagem/mensagem.service';
 import { environment } from './../../../environments/environment';
 
@@ -135,7 +136,6 @@ export class FormComponent implements OnInit {
       nome: [valor.nome, [Validators.required]],
       telefone: [valor.telefone, []],
       email: [valor.email, []],
-      senha: [valor.senha, [Validators.required]],
       votou: [valor.votou, []],
     });
     return result;
@@ -242,76 +242,6 @@ export class FormComponent implements OnInit {
     arquivo.readAsText(event.target.files[0]);
   }
 
-  enviarLink(meio: string, votacao: Votacao, participante: Participante): void {
-    let mensagem = null;
-
-    let url = '';
-    if (meio === 'whatsapp') {
-      mensagem =
-        `Olá ${participante.nome}!,
-
-Encaminhamos o link ${environment.API_URL}/${participante.identificacao}/${votacao.id}
-e a sua senha *${participante.senha}*
-para a votação *_${votacao.nome}_*
-
-ATENÇÃO: memorize esta senha, ela será solicitada durante o processo de votação`;
-      url = `https://api.whatsapp.com/send?phone=${participante.telefone}&text=${encodeURI(mensagem)}&preview_url=true`;
-      console.log(`enviando url ${url}`);
-      const win = window.open(url, '_blank');
-    } else {
-      this.servico.enviarEmail({
-        votacao: {
-          id: votacao.id,
-          nome: votacao.nome
-        },
-        API_URL: environment.API_URL,
-        participanteIdLista: [participante.id]
-      }).subscribe(r => {
-        this.mensagem.sucesso('E-mail enviado!!!');
-      });
-    }
-  }
-
-  enviarLinkTodos(meio: string): void {
-    const votacao = this.frm.value;
-    const lista = this.frm.get('participanteLista').value;
-    const tempo = 2 * 1000;
-    const participanteIdLista = [];
-
-    if (lista && lista.length && confirm(`Confirma o envio do link, a todos os participantes selecionados, por ${meio}?`)) {
-      lista.forEach((v: Participante) => {
-        if (v['selecao']) {
-          if (meio === 'whatsapp') {
-            new Promise((resolve, reject) => {
-              setTimeout(() => {
-                this.enviarLink(meio, votacao, v);
-                resolve(true);
-              }, tempo);
-            }).then(r => console.log('Enviado ...', v.nome));
-          } else {
-            participanteIdLista.push(v.id);
-          }
-        }
-      });
-      if (meio === 'email' && participanteIdLista && participanteIdLista.length) {
-        this.servico.enviarEmail({
-          votacao: {
-            id: votacao.id,
-            nome: votacao.nome
-          },
-          API_URL: environment.API_URL,
-          participanteIdLista
-        }).subscribe(r => {
-          this.mensagem.sucesso('E-mails enviados!!!');
-        }, e => {
-          this.mensagem.erro('Erro no serviço de envio de e-mail!!!');
-          console.log(e);
-        });
-      }
-    }
-
-  }
-
   enviar(event): void {
     event.preventDefault();
     if (this.frm.invalid) {
@@ -391,6 +321,52 @@ ATENÇÃO: memorize esta senha, ela será solicitada durante o processo de vota�
           console.log(e);
         });
       }
+    }
+  }
+
+  async enviarCedula(meio: string): Promise<any> {
+    const votacao = this.frm.value;
+    const lista = this.frm.get('participanteLista').value;
+    const tempo = 3 * 1000;
+    const participanteIdLista = [];
+
+    if (lista && lista.length && confirm(`Confirma o envio do link, a todos os participantes selecionados, por ${meio}?`)) {
+      const senha = await this.mensagem.confirmeModelo('Digite a senha de acesso', ConfirmarVotoComponent);
+      if (!senha) {
+        return;
+      }
+      lista.forEach((v: Participante) => {
+        if (v['selecao']) {
+          participanteIdLista.push(v.id);
+        }
+      });
+      this.servico.enviarCedula({
+        meio,
+        senha,
+        votacao: {
+          id: votacao.id,
+          nome: votacao.nome
+        },
+        API_URL: environment.API_URL,
+        participanteIdLista
+      }).subscribe(result => {
+        if (meio === 'email') {
+          this.mensagem.sucesso('E-mails enviados!!!');
+        } else {
+          for (const r of result) {
+            new Promise((resolve, reject) => {
+              setTimeout(() => {
+                window.open(r.url, '_blank');
+                resolve(true);
+              }, tempo);
+            }).then(enviou => console.log(enviou));
+          }
+          this.mensagem.sucesso('WhatsApp enviados!!!');
+        }
+      }, e => {
+        this.mensagem.erro('Erro no envio das cédulas!!!');
+        console.log(e);
+      });
     }
   }
 

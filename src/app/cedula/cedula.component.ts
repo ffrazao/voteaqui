@@ -85,8 +85,7 @@ export class CedulaComponent implements OnInit {
   }
 
   async confirmar(): Promise<any> {
-    let senha = '';
-    senha = await this.mensagem.confirmeModelo('Confirme o seu voto! Insira a senha enviada', ConfirmarVotoComponent);
+    const senha = await this.mensagem.confirmeModelo('Confirme o seu voto! Insira a senha enviada', ConfirmarVotoComponent);
     if (senha) {
       const votoJson = { codigo: this.entidade.votacaoLista[0].codigo, pautaLista: [] };
 
