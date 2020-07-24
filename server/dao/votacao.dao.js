@@ -39,11 +39,10 @@ class VotacaoDao {
       `UPDATE ${this.nomeTabela}
        SET nome = ?,
            descricao = ?,
-           senha = ?,
            inicio = ?,
            termino = ?
       WHERE id = ?`,
-      [/*codigo, */ nome, descricao, senha, inicio, termino, id]
+      [/*codigo, */ nome, descricao, /*senha, */inicio, termino, id]
     );
   }
 
@@ -110,6 +109,15 @@ class VotacaoDao {
     FROM   Participante
     WHERE  votacaoId = ?
     AND    votou = 1`, [votacaoId]);
+  }
+
+  updateSenha(id, senhaNova) {
+    return this.dao.run(
+      `UPDATE ${this.nomeTabela}
+       SET senha = ?
+      WHERE id = ?`,
+      [senhaNova, id]
+    );
   }
 
 }

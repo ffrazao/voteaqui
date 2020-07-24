@@ -1,5 +1,4 @@
-import { MensagemService } from './../../comum/service/mensagem/mensagem.service';
-import { environment } from './../../../environments/environment';
+import { AlterarSenhaComponent } from './../../cedula/alterar-senha/alterar-senha.component';
 import { Component, OnInit } from '@angular/core';
 import { FormGroup, FormBuilder, Validators, FormArray } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -9,6 +8,8 @@ import { Participante } from './../../modelo/entidade/participante';
 import { Opcao } from './../../modelo/entidade/opcao';
 import { Pauta } from './../../modelo/entidade/pauta';
 import { Votacao } from './../../modelo/entidade/votacao';
+import { MensagemService } from './../../comum/service/mensagem/mensagem.service';
+import { environment } from './../../../environments/environment';
 
 @Component({
   selector: 'app-form',
@@ -41,15 +42,15 @@ export class FormComponent implements OnInit {
     this._route.params.subscribe(p => {
       this.id = p.id;
       this._route.data.subscribe((info) => {
-        this.entidade = info.dados;
-        if (this.id && (prompt('Digite a senha de acesso') !== this.entidade.senha)) {
-          this.mensagem.erro('Senha inválida');
+        info.dados.subscribe((d) => {
+          this.entidade = d;
+          this.frm = this.carregar(this.entidade);
+        }, (e) => {
+          this.mensagem.erro('Acesso não autorizado');
           this._router.navigate(['/config']);
-        }
-        this.frm = this.carregar(this.entidade);
+        });
       });
     });
-
   }
 
   private carregar(votacao: Votacao): FormGroup {
@@ -72,12 +73,17 @@ export class FormComponent implements OnInit {
       pautaLista: this.criarPautaLista(votacao.pautaLista),
       participanteLista: this.criarParticipanteLista(votacao.participanteLista),
     });
+    if (votacao.id) {
+      result.get('senha').clearValidators();
+    }
     return result;
   }
 
   private criarPautaLista(lista: Pauta[]): FormArray {
     const items = [];
-    lista.forEach(e => items.push(this.criarPauta(e)));
+    if (lista && lista.length) {
+      lista.forEach(e => items.push(this.criarPauta(e)));
+    }
     const result = this.fb.array(items, [Validators.required]);
     return result;
   }
@@ -96,7 +102,9 @@ export class FormComponent implements OnInit {
 
   private criarOpcaoLista(lista: Opcao[]): FormArray {
     const items = [];
-    lista.forEach(e => items.push(this.criarOpcao(e)));
+    if (lista && lista.length) {
+      lista.forEach(e => items.push(this.criarOpcao(e)));
+    }
     const result = this.fb.array(items, [Validators.required]);
     return result;
   }
@@ -113,7 +121,9 @@ export class FormComponent implements OnInit {
 
   private criarParticipanteLista(lista: Participante[]): FormArray {
     const items = [];
-    lista.forEach(e => items.push(this.criarParticipante(e)));
+    if (lista && lista.length) {
+      lista.forEach(e => items.push(this.criarParticipante(e)));
+    }
     const result = this.fb.array(items, [Validators.required]);
     return result;
   }
@@ -246,38 +256,60 @@ para a votação *_${votacao.nome}_*
 
 ATENÇÃO: memorize esta senha, ela será solicitada durante o processo de votação`;
       url = `https://api.whatsapp.com/send?phone=${participante.telefone}&text=${encodeURI(mensagem)}&preview_url=true`;
+      console.log(`enviando url ${url}`);
+      const win = window.open(url, '_blank');
     } else {
-      mensagem =
-        `Olá ${participante.nome}!,
-
-Encaminhamos o link ${environment.API_URL}/${participante.identificacao}/${votacao.id}
-e a sua senha ${participante.senha}
-para a votação ${votacao.nome}
-
-ATENÇÃO: memorize esta senha, ela será solicitada durante o processo de votação`;
-      url = `mailto:${participante.email}?&subject=${votacao.nome}&body=${encodeURI(mensagem)}`;
+      this.servico.enviarEmail({
+        votacao: {
+          id: votacao.id,
+          nome: votacao.nome
+        },
+        API_URL: environment.API_URL,
+        participanteIdLista: [participante.id]
+      }).subscribe(r => {
+        this.mensagem.sucesso('E-mail enviado!!!');
+      });
     }
-    console.log(`enviando url ${url}`);
-    const win = window.open(url, '_blank');
   }
 
   enviarLinkTodos(meio: string): void {
-    const tempo = 2 * 1000;
-
     const votacao = this.frm.value;
     const lista = this.frm.get('participanteLista').value;
+    const tempo = 2 * 1000;
+    const participanteIdLista = [];
+
     if (lista && lista.length && confirm(`Confirma o envio do link, a todos os participantes selecionados, por ${meio}?`)) {
       lista.forEach((v: Participante) => {
         if (v['selecao']) {
-          new Promise((resolve, reject) => {
-            setTimeout(() => {
-              this.enviarLink(meio, votacao, v);
-              resolve(true);
-            }, tempo);
-          }).then(r => console.log('Enviado ...', v.nome));
+          if (meio === 'whatsapp') {
+            new Promise((resolve, reject) => {
+              setTimeout(() => {
+                this.enviarLink(meio, votacao, v);
+                resolve(true);
+              }, tempo);
+            }).then(r => console.log('Enviado ...', v.nome));
+          } else {
+            participanteIdLista.push(v.id);
+          }
         }
       });
+      if (meio === 'email' && participanteIdLista && participanteIdLista.length) {
+        this.servico.enviarEmail({
+          votacao: {
+            id: votacao.id,
+            nome: votacao.nome
+          },
+          API_URL: environment.API_URL,
+          participanteIdLista
+        }).subscribe(r => {
+          this.mensagem.sucesso('E-mails enviados!!!');
+        }, e => {
+          this.mensagem.erro('Erro no serviço de envio de e-mail!!!');
+          console.log(e);
+        });
+      }
     }
+
   }
 
   enviar(event): void {
@@ -343,6 +375,23 @@ ATENÇÃO: memorize esta senha, ela será solicitada durante o processo de vota�
       }
     }
     return numero;
+  }
+
+  async alterarSenha(): Promise<void> {
+    const votacao = this.frm.value;
+    const senhas = await this.mensagem.confirmeModelo('Digite', AlterarSenhaComponent);
+    if (senhas) {
+      if (!senhas.senhaAtual || !senhas.senhaNova) {
+        this.mensagem.erro('Senhas não informadas!');
+      } else {
+        this.servico.alterarSenha(votacao.id, senhas).subscribe((r) => {
+          this.mensagem.sucesso('Senha Alterada com sucesso!');
+        }, (e) => {
+          this.mensagem.erro('Erro ao alterar senha');
+          console.log(e);
+        });
+      }
+    }
   }
 
 }

@@ -1,3 +1,4 @@
+import { AlterarSenhaComponent } from './alterar-senha/alterar-senha.component';
 import { MatDialogModule } from '@angular/material/dialog';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { NgModule } from '@angular/core';
@@ -18,7 +19,7 @@ import { ConfirmarVotoComponent } from './confirmar-voto/confirmar-voto.componen
   declarations: [
     CedulaComponent,
     ConfirmarVotoComponent,
-    ConfirmarVotoComponent,
+    AlterarSenhaComponent,
   ],
   imports: [
     CommonModule,
@@ -35,7 +36,7 @@ import { ConfirmarVotoComponent } from './confirmar-voto/confirmar-voto.componen
     CedulaResolver,
   ],
   entryComponents: [
-    ConfirmarVotoComponent,
+    AlterarSenhaComponent,
   ]
 })
 export class CedulaModule { }

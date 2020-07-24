@@ -45,7 +45,7 @@ class VotacaoBo {
 
   // API Votacao RESTORE
   async restore(id) {
-    console.log("carregar votacao", id);
+    console.log(`carregar votacao [${id}]`);
     var result = null;
     var registro = await this.dao.getById(id);
     if (registro) {
@@ -270,6 +270,22 @@ class VotacaoBo {
       throw new Error(`Votação em apuração (${votacaoId})`);
     }
     return JSON.parse(result.resultado);
+  }
+
+  async alterarSenha(votacaoId, senhaAtual, senhaNova) {
+    const votacao = await this.restore(votacaoId);
+    if (!votacao) {
+      throw new Error('Votação não encontrada!');
+    }
+    if (senhaAtual !== votacao.senha) {
+      throw new Error('Senha inválida!');
+    }
+    console.log('senhaNova.trim().length', senhaNova.trim().length);
+    if (!senhaNova || !senhaNova.trim().length) {
+      throw new Error('Senha nula!');
+    }
+    this.dao.updateSenha(votacaoId, senhaNova);
+    return true;
   }
 }
 

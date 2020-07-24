@@ -10,7 +10,6 @@ import { Votacao } from './../modelo/entidade/votacao';
 })
 export class ConfigService {
 
-
   constructor(
     private http: HttpClient
   ) { }
@@ -23,8 +22,8 @@ export class ConfigService {
     return this.http.post(`${environment.API_URL}/api/votacao`, dados);
   }
 
-  public restore(id: number): Observable<any> {
-    return this.http.get(`${environment.API_URL}/api/votacao/${id}`);
+  public restore(id: number, senha: string): Observable<any> {
+    return this.http.get(`${environment.API_URL}/api/votacao/${id}/${senha}`);
   }
 
   public update(dados: Votacao): Observable<any> {
@@ -33,6 +32,20 @@ export class ConfigService {
 
   public list(): Observable<any> {
     return this.http.get(`${environment.API_URL}/api/votacao`);
+  }
+
+  public enviarEmail(mensagem: {
+    votacao: { id: number, nome: string },
+    API_URL: string,
+    participanteIdLista: number[]
+  }): Observable<any> {
+    return this.http.post(`${environment.API_URL}/api/participante/email`, mensagem);
+  }
+
+  public alterarSenha(id: any, senhas: any): Observable<any> {
+    if (senhas && senhas.senhaAtual && senhas.senhaNova) {
+      return this.http.put(`${environment.API_URL}/api/votacao/${id}/alterar-senha/${senhas.senhaAtual}/${senhas.senhaNova}`, null);
+    }
   }
 
 }

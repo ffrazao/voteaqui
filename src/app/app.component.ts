@@ -7,4 +7,8 @@ import { Component } from '@angular/core';
 })
 export class AppComponent {
   title = 'voteaqui';
+
+  abrirAmazon(): void {
+    window.open('http://www.amazoninf.com.br', '_blank');
+  }
 }

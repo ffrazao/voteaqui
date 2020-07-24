@@ -1,8 +1,10 @@
-<div class="container">
+<div class="container pt-4 pb-4">
   <div class="glass-wrap">
-    <div class="glass">
-      <h1 class="display-1 text-center m-3 p-3"><img src="assets/imagem/logo_voteaqui.png"></h1>
+    <div class="glass d-flex justify-content-around align-items-center">
+      <img src="assets/imagem/logo_voteaqui.png" style="width: auto; height: 90%;">
+      <img src="assets/amazon-logo-p.png" style="width: auto; height: 50%;" (click)="abrirAmazon()">
     </div>
   </div>
   <router-outlet></router-outlet>
 </div>
+<app-rodape></app-rodape>

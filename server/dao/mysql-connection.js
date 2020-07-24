@@ -9,6 +9,17 @@ const db_config = {
   dateStrings: true,
 };
 
+var myArgs = process.argv.slice(2);
+
+if (myArgs.includes('local')) {
+  console.log('acesso BD local');
+  db_config.host = "localhost";
+  db_config.user = "root";
+  db_config.password = "root";
+}
+
+console.log(db_config);
+
 (function () {
   var connection;
 

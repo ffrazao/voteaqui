@@ -1,3 +1,4 @@
+import { RodapeModule } from './rodape/rodape.module';
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule, LOCALE_ID } from '@angular/core';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
@@ -24,6 +25,7 @@ registerLocaleData(localeBr, 'pt')
     BrowserAnimationsModule,
     MatMomentDateModule,
     HttpClientModule,
+    RodapeModule,
 
     ServiceModule,
   ],
