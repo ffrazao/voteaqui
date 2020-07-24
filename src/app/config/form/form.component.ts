@@ -136,6 +136,9 @@ export class FormComponent implements OnInit {
       nome: [valor.nome, [Validators.required]],
       telefone: [valor.telefone, []],
       email: [valor.email, []],
+      senhaTentativa: [valor.senhaTentativa, []],
+      senhaBloqueio: [valor.senhaBloqueio, []],
+      senhaTotDesbloqueio: [valor.senhaTotDesbloqueio, []],
       votou: [valor.votou, []],
     });
     return result;
@@ -368,6 +371,18 @@ export class FormComponent implements OnInit {
         console.log(e);
       });
     }
+  }
+
+  desbloquear(participanteId): void {
+    this.servico.desbloquear(participanteId).subscribe(
+      (r) => {
+        this.mensagem.sucesso('Desbloqueio realizado com sucesso!');
+        window.location.reload();
+      },
+      (e) => {
+        this.mensagem.erro('Erro ao desbloquear');
+        console.log(e);
+      });
   }
 
 }

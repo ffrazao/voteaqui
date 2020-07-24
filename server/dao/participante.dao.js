@@ -8,14 +8,17 @@ class ParticipanteDao {
   createTable() {
     const sql = `
     CREATE TABLE IF NOT EXISTS ${this.nomeTabela} (
-      id            INTEGER PRIMARY KEY AUTO_INCREMENT,
-      identificacao VARCHAR(255) NOT NULL,
-      nome          TEXT NOT NULL,
-      telefone      TEXT,
-      email         TEXT,
-      senha         TEXT NOT NULL,
-      votou         BOOLEAN NOT NULL,
-      votacaoId     INTEGER NOT NULL,
+      id                  INTEGER PRIMARY KEY AUTO_INCREMENT,
+      identificacao       VARCHAR(255) NOT NULL,
+      nome                TEXT NOT NULL,
+      telefone            TEXT,
+      email               TEXT,
+      senha               TEXT NOT NULL,
+      senhaTentativa      INTEGER NOT NULL DEFAULT '0',
+      senhaBloqueio       DATETIME DEFAULT NULL,
+      senhaTotDesbloqueio INTEGER NOT NULL DEFAULT '0',
+      votou               BOOLEAN NOT NULL,
+      votacaoId           INTEGER NOT NULL,
       CONSTRAINT    ${this.nomeTabela}_fk_votacaoId FOREIGN KEY (votacaoId)
       REFERENCES    Votacao(id) ON UPDATE CASCADE ON DELETE CASCADE
     )`;
@@ -99,6 +102,44 @@ class ParticipanteDao {
       [id]
     );
   }
+
+  updateSenha(id, senhaNova) {
+    return this.dao.run(
+      `UPDATE ${this.nomeTabela}
+       SET senha = ?
+      WHERE id = ?`,
+      [senhaNova, id]
+    );
+  }
+
+  updateSenhaBloqueio(id, registro)  {
+    return this.dao.run(
+      `UPDATE ${this.nomeTabela}
+       SET senhaTentativa = ?,
+           senhaBloqueio = ?
+       WHERE id = ?`,
+      [registro.senhaTentativa, registro.senhaBloqueio, id]
+    );
+  }
+
+  senhaEmCarencia(votacaoId) {
+    return this.dao.get(`
+    SELECT IFNULL(senhaBloqueio > CONVERT_TZ(NOW(), @@SESSION .time_zone, '-3:00'), 0) AS bloqueado
+    FROM ${this.nomeTabela}
+    WHERE id = ?`, [votacaoId]);
+  }
+
+  updateDesbloqueiaSenha(id)  {
+    return this.dao.run(
+      `UPDATE ${this.nomeTabela}
+       SET senhaTentativa = 0,
+           senhaBloqueio = null,
+           senhaTotDesbloqueio = senhaTotDesbloqueio + 1
+       WHERE id = ?`,
+      [id]
+    );
+  }
+
 }
 
 module.exports = ParticipanteDao;

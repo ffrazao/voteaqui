@@ -76,7 +76,7 @@ app.get("/api/votacao/:id/:senha", async function (req, res) {
   try {
     var result = await votacaoBo.restore(req.params.id);
     if (result) {
-      if (!await votacaoBo.validaSenha(req.params.id, req.params.senha)) {
+      if (!(await votacaoBo.validaSenha(req.params.id, req.params.senha))) {
         var msg = `Senha inválida`;
         res.statusMessage = msg;
         res.sendStatus(500);
@@ -142,24 +142,31 @@ app.get("/api/votacao", async function (req, res) {
   }
   res.end();
 });
-app.put("/api/votacao/:id/alterar-senha/:senhaAtual/:senhaNova", async function (req, res) {
-  console.log('altera senha', req.params);
-  try {
-    getConexaoMySql().query("BEGIN");
-    var result = await votacaoBo.alterarSenha(req.params.id, req.params.senhaAtual, req.params.senhaNova);
-    res.write(`${result}`);
-    getConexaoMySql().query("COMMIT");
-  } catch (e) {
-    // rollback
-    getConexaoMySql().query("ROLLBACK");
-    var msg = `Erro ao alterar senha (${e})`;
-    console.log(msg);
-    res.status(500);
-    res.statusMessage = msg;
-    res.write(JSON.stringify({ msg }));
+app.put(
+  "/api/votacao/:id/alterar-senha/:senhaAtual/:senhaNova",
+  async function (req, res) {
+    console.log("altera senha", req.params);
+    try {
+      getConexaoMySql().query("BEGIN");
+      var result = await votacaoBo.alterarSenha(
+        req.params.id,
+        req.params.senhaAtual,
+        req.params.senhaNova
+      );
+      res.write(`${result}`);
+      getConexaoMySql().query("COMMIT");
+    } catch (e) {
+      // rollback
+      getConexaoMySql().query("ROLLBACK");
+      var msg = `Erro ao alterar senha (${e})`;
+      console.log(msg);
+      res.status(500);
+      res.statusMessage = msg;
+      res.write(JSON.stringify({ msg }));
+    }
+    res.end();
   }
-  res.end();
-});
+);
 app.post("/api/votacao/cedula", async function (req, res) {
   var registro = req.body;
   try {
@@ -169,9 +176,28 @@ app.post("/api/votacao/cedula", async function (req, res) {
   } catch (e) {
     console.log(e);
     res.status(500);
-    res.statusMessage =
-      "Erro no envio das cédulas [" + JSON.stringify(e) + "]";
+    res.statusMessage = "Erro no envio das cédulas [" + JSON.stringify(e) + "]";
     res.write(res.statusMessage);
+  }
+  res.end();
+});
+app.put("/api/votacao/desbloquear", async function (req, res) {
+  var registro = req.body;
+  try {
+    getConexaoMySql().query("BEGIN");
+    console.log(`desbloqueando votacao ${registro.id}`);
+    var result = await votacaoBo.updateDesbloqueiaSenha(registro.id);
+    console.log(`votacao ${registro.id} desbloqueada`);
+    res.write(`${result}`);
+    getConexaoMySql().query("COMMIT");
+  } catch (e) {
+    // rollback
+    getConexaoMySql().query("ROLLBACK");
+    var msg = `Erro ao atualizar registro (${e})`;
+    console.log(msg);
+    res.status(500);
+    res.statusMessage = msg;
+    res.write(JSON.stringify({ msg }));
   }
   res.end();
 });
@@ -225,6 +251,26 @@ app.get("/api/participante/:identificacao/:votacao", async function (req, res) {
   }
   res.end();
 });
+app.put("/api/participante/desbloquear", async function (req, res) {
+  var registro = req.body;
+  try {
+    getConexaoMySql().query("BEGIN");
+    console.log(`desbloqueando participante ${registro.id}`);
+    await participanteBo.updateDesbloqueiaSenha(registro.id);
+    console.log(`participante ${registro.id} desbloqueado`);
+    res.write(`true`);
+    getConexaoMySql().query("COMMIT");
+  } catch (e) {
+    // rollback
+    getConexaoMySql().query("ROLLBACK");
+    var msg = `Erro ao atualizar registro (${e})`;
+    console.log(msg);
+    res.status(500);
+    res.statusMessage = msg;
+    res.write(JSON.stringify({ msg }));
+  }
+  res.end();
+});
 
 // API Voto
 
@@ -239,7 +285,6 @@ app.post("/api/voto/:identificacao/:votacaoId/:senha", async function (
 ) {
   var registro = req.body;
   try {
-    getConexaoMySql().query("BEGIN");
     var participante = await participanteBo.getPodeVotarByIdentificacaoAndVotacaoId(
       req.params.identificacao,
       req.params.votacaoId
@@ -247,9 +292,12 @@ app.post("/api/voto/:identificacao/:votacaoId/:senha", async function (
     if (!participante) {
       throw new Error("Voto não autorizado!");
     }
-    if (participante.senha !== req.params.senha) {
+    if (
+      !(await participanteBo.validaSenha(participante.id, req.params.senha))
+    ) {
       throw new Error("Senha inválida!");
     }
+    getConexaoMySql().query("BEGIN");
     var result = await votoBo.create(registro);
     await participanteBo.votar(participante.id);
     res.write(`${result}`);

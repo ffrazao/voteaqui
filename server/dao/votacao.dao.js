@@ -8,13 +8,16 @@ class VotacaoDao {
   createTable() {
     const sql = `
     CREATE TABLE IF NOT EXISTS ${this.nomeTabela} (
-      id        INTEGER PRIMARY KEY AUTO_INCREMENT,
-      codigo    VARCHAR(255) NOT NULL,
-      nome      TEXT NOT NULL,
-      descricao TEXT NOT NULL,
-      senha     VARCHAR(255) NOT NULL,
-      inicio    DATETIME NOT NULL,
-      termino   DATETIME NOT NULL,
+      id                  INTEGER PRIMARY KEY AUTO_INCREMENT,
+      codigo              VARCHAR(255) NOT NULL,
+      nome                TEXT NOT NULL,
+      descricao           TEXT NOT NULL,
+      senha               VARCHAR(255) NOT NULL,
+      senhaTentativa      INTEGER NOT NULL DEFAULT '0',
+      senhaBloqueio       DATETIME DEFAULT NULL,
+      senhaTotDesbloqueio INTEGER NOT NULL DEFAULT '0',
+      inicio              DATETIME NOT NULL,
+      termino             DATETIME NOT NULL,
       resultado TEXT
     )`;
     return this.dao.run(sql);
@@ -117,6 +120,34 @@ class VotacaoDao {
        SET senha = ?
       WHERE id = ?`,
       [senhaNova, id]
+    );
+  }
+
+  updateSenhaBloqueio(id, registro)  {
+    return this.dao.run(
+      `UPDATE ${this.nomeTabela}
+       SET senhaTentativa = ?,
+           senhaBloqueio = ?
+       WHERE id = ?`,
+      [registro.senhaTentativa, registro.senhaBloqueio, id]
+    );
+  }
+
+  senhaEmCarencia(votacaoId) {
+    return this.dao.get(`
+    SELECT IFNULL(senhaBloqueio > CONVERT_TZ(NOW(), @@SESSION .time_zone, '-3:00'), 0) AS bloqueado
+    FROM ${this.nomeTabela}
+    WHERE id = ?`, [votacaoId]);
+  }
+
+  updateDesbloqueiaSenha(id)  {
+    return this.dao.run(
+      `UPDATE ${this.nomeTabela}
+       SET senhaTentativa = 0,
+           senhaBloqueio = null,
+           senhaTotDesbloqueio = senhaTotDesbloqueio + 1
+       WHERE id = ?`,
+      [id]
     );
   }
 

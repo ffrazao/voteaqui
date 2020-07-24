@@ -50,4 +50,8 @@ export class ConfigService {
     }
   }
 
+  public desbloquear(participanteId: any): Observable<any> {
+    return this.http.put(`${environment.API_URL}/api/participante/desbloquear`, { id: participanteId });
+  }
+
 }

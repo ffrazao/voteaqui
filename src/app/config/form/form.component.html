@@ -259,13 +259,15 @@
           <th>Telefone</th>
           <th>E-mail</th>
           <th>Votou</th>
+          <th>Bloqueio</th>
           <th>Ação</th>
         </tr>
       </thead>
       <tbody formArrayName="participanteLista">
         <tr
           *ngFor="let participante of getLista(frm, 'participanteLista').controls | callback: filtrar: [filtro, filtroTexto]; let i = index"
-          [formGroupName]="i">
+          [formGroupName]="i"
+          [class]="participante.value.senhaTentativa >= 3 ? 'table-danger': ''">
           <td>
             {{i+1}}.
           </td>
@@ -311,6 +313,11 @@
           </td>
           <td>
             <mat-checkbox [checked]="participante.value.votou" [disabled]="true"></mat-checkbox>
+          </td>
+          <td>
+            Tentativas {{participante.value.senhaTentativa}}, tempo desbloqueio {{participante.value.senhaBloqueio}}, Tot. Desbloqueio
+            {{participante.value.senhaTotDesbloqueio}}
+            <button type="button" class="btn btn-primary" *ngIf="participante.value.senhaTentativa >= 3" (click)="desbloquear(participante.value.id)">Desbloquear</button>
           </td>
           <td>
             <div>

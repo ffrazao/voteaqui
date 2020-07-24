@@ -10,11 +10,12 @@
         <th>Descricao</th>
         <th>Início</th>
         <th>Término</th>
+        <th>Bloqueio</th>
         <th>Ação</th>
       </tr>
     </thead>
     <tbody>
-      <tr *ngFor="let registro of entidade; let i = index">
+      <tr *ngFor="let registro of entidade; let i = index" [class]="registro.senhaTentativa >= 3 ? 'table-danger': ''">
         <td>
           {{i+1}}.
         </td>
@@ -34,6 +35,10 @@
           {{registro.termino | date : 'dd/MM/yyyy HH:mm' : 'GMT-3:00'}}
         </td>
         <td>
+          Tentativas {{registro.senhaTentativa}}, tempo desbloqueio {{registro.senhaBloqueio}}, Tot. Desbloqueio
+          {{registro.senhaTotDesbloqueio}}
+        </td>
+        <td>
           <div>
             <div>
               <button type="button" mat-button class="btn btn-secondary" [routerLink]="[registro.id]">Editar</button>
@@ -46,4 +51,4 @@
   </table>
 </div>
 
- <!-- /{{entidade | json}}/ -->
+<!-- /{{entidade | json}}/ -->

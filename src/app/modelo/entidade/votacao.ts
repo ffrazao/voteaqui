@@ -7,6 +7,9 @@ export class Votacao {
   public nome: string;
   public descricao: string;
   public senha: string;
+  public senhaTentativa: number;
+  public senhaBloqueio: string;
+  public senhaTotDesbloqueio: number;
   public inicio: string;
   public termino: string;
   public pautaLista: Pauta[] = [];

@@ -285,25 +285,52 @@ class VotacaoBo {
     return JSON.parse(result.resultado);
   }
 
-  async alterarSenha(votacaoId, senhaAtual, senhaNova) {
-    if (!await this.validaSenha(votacaoId, senhaAtual)) {
+  async alterarSenha(id, senhaAtual, senhaNova) {
+    if (!(await this.validaSenha(id, senhaAtual))) {
       throw new Error("Senha inválida!");
     }
     if (!senhaNova || !senhaNova.trim().length) {
       throw new Error("Senha nula!");
     }
-    this.dao.updateSenha(votacaoId, bcrypt.hashSync(senhaNova, 10));
+    this.dao.updateSenha(id, bcrypt.hashSync(senhaNova, 10));
     return true;
   }
 
   // API Votacao RESTORE
   async validaSenha(votacaoId, senha) {
     var registro = await this.dao.getById(votacaoId);
-    return registro && bcrypt.compareSync(senha, registro.senha);
+    var result = false;
+    if (!registro) {
+      return result;
+    }
+    if (bcrypt.compareSync(senha, registro.senha)) {
+      result = true;
+      console.log('acertou');
+    } else {
+      registro.senhaTentativa++;
+      console.log('errou', registro.senhaTentativa);
+    }
+    if (registro.senhaTentativa >= 3) {
+      // var bloqueio = new Date(new Date().getTime() + (30 * 60000));
+      var bloqueio = new Date(new Date().getTime() + (1 * 60000));
+      registro.senhaBloqueio = bloqueio;
+      console.log('bloqueando senha ', registro.senhaTentativa, registro.senhaBloqueio);
+    }
+    this.dao.updateSenhaBloqueio(votacaoId, registro);
+    var bloqueadoPorTempo = await this.dao.senhaEmCarencia(votacaoId);
+    console.log(`bloqueadoPorTempo`, JSON.stringify(bloqueadoPorTempo));
+    if (bloqueadoPorTempo.bloqueado) {
+      console.log('Dentro da carencia do bloqueio ', registro.senhaTentativa, registro.senhaBloqueio);
+      throw new Error("Senha BLOQUEADA, aguardando tempo de desbloqueio");
+    }
+    return result;
+  }
+  async updateDesbloqueiaSenha(votacaoId) {
+    this.dao.updateDesbloqueiaSenha(votacaoId);
   }
 
   async enviarCedula(mensagem) {
-    if (!await this.validaSenha(mensagem.votacao.id, mensagem.senha)) {
+    if (!(await this.validaSenha(mensagem.votacao.id, mensagem.senha))) {
       throw new Error("Senha inválida!");
     }
     var resultado = [];
@@ -312,9 +339,8 @@ class VotacaoBo {
 
       console.log(`enviando ${mensagem.meio} para ${participante.nome}`);
 
-      if (mensagem.meio === 'whatsapp') {
-        var msg =
-        `Olá ${participante.nome}!,
+      if (mensagem.meio === "whatsapp") {
+        var msg = `Olá ${participante.nome}!,
 
 Encaminhamos o link ${mensagem.API_URL}/${participante.identificacao}/${mensagem.votacao.id}
 e a sua senha *${participante.senha}*
@@ -323,7 +349,9 @@ para a votação *_${mensagem.votacao.nome}_*
 ATENÇÃO: memorize esta senha, ela será solicitada durante o processo de votação`;
 
         resultado.push({
-          url: `https://api.whatsapp.com/send?phone=${participante.telefone}&text=${encodeURI(msg)}&preview_url=true`,
+          url: `https://api.whatsapp.com/send?phone=${
+            participante.telefone
+          }&text=${encodeURI(msg)}&preview_url=true`,
         });
       } else {
         var msg = `<p>Olá ${participante.nome}!,</p>
