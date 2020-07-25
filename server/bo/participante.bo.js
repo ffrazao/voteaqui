@@ -141,8 +141,7 @@ class ParticipanteBo {
       console.log("errou", registro.senhaTentativa);
     }
     if (registro.senhaTentativa >= 3) {
-      // var bloqueio = new Date(new Date().getTime() + (30 * 60000));
-      var bloqueio = new Date(new Date().getTime() + 1 * 60000);
+      var bloqueio = new Date(new Date().getTime() + (30 * 60000));
       registro.senhaBloqueio = bloqueio;
       console.log(
         "bloqueando senha ",

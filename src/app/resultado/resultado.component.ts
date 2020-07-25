@@ -30,7 +30,6 @@ export class ResultadoComponent implements OnInit {
         // ordenar opcoes
         this.entidade.resultado.pautaLista.forEach((p) => {
           p.opcaoLista.sort((o1, o2) => {
-            console.log(o1, o2);
             return (o1.valor.S < o2.valor.S) ? 1 :
               (o1.valor.N > o2.valor.N) ? 1 :
                 (o1.nome > o2.nome) ? 1 :

@@ -43,8 +43,8 @@ export class CedulaComponent implements OnInit {
           this.router.navigate(['../', this.identificacao]);
           return;
         }
-        const inicio = new Date(this.entidade.votacaoLista[0].inicio);
-        const termino = new Date(this.entidade.votacaoLista[0].termino);
+        const inicio = new Date(this.entidade.votacaoLista[0].inicio.replace(/-/g, '/'));
+        const termino = new Date(this.entidade.votacaoLista[0].termino.replace(/-/g, '/'));
         if (agora.getTime() < inicio.getTime()) {
           this.mensagem.erro(`Votação (${this.entidade.votacaoLista[0].nome}) ainda não foi iniciada. Início previsto para (${inicio})`);
           this.router.navigate(['../', this.identificacao]);
@@ -64,8 +64,8 @@ export class CedulaComponent implements OnInit {
 
   situacao(inicio, termino): { sigla: string, nome: string } {
     let agora = new Date();
-    inicio = new Date(inicio);
-    termino = new Date(termino);
+    inicio = new Date(inicio.replace(/-/g, '/'));
+    termino = new Date(termino.replace(/-/g, '/'));
     if (agora.getTime() >= inicio.getTime() && agora.getTime() <= termino.getTime()) {
       return { sigla: 'E', nome: 'Em andamento' };
     } else if (agora.getTime() < inicio.getTime()) {

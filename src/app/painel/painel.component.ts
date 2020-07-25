@@ -32,6 +32,11 @@ export class PainelComponent implements OnInit {
         if (!this.entidade) {
           this.mensagem.erro(`Nenhuma votação encontrada para o identificador ${this.identificacao}`);
           this.router.navigate(['../']);
+        } else {
+          this.entidade.votacaoLista.forEach(e => {
+            e.inicio = e.inicio.replace(/-/g, '/');
+            e.termino = e.termino.replace(/-/g, '/');
+          });
         }
       });
     });
@@ -39,8 +44,8 @@ export class PainelComponent implements OnInit {
 
   situacao(inicio, termino): { sigla: string, nome: string } {
     let agora = new Date();
-    inicio = new Date(inicio);
-    termino = new Date(termino);
+    inicio = new Date(inicio.replace(/-/g, '/'));
+    termino = new Date(termino.replace(/-/g, '/'));
     if (agora.getTime() >= inicio.getTime() && agora.getTime() <= termino.getTime()) {
       return { sigla: 'E', nome: 'Em andamento' };
     } else if (agora.getTime() < inicio.getTime()) {
