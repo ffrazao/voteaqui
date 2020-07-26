@@ -18,7 +18,7 @@ class PautaBo {
 
   // API Pauta CREATE
   async create (registro, votacaoId) {
-    console.log('criar pauta', registro);
+    console.log('criar pauta');
 
     registro.id = (
       await this.dao.create(

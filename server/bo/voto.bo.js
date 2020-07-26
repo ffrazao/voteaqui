@@ -41,7 +41,7 @@ class VotoBo {
 
   // API Voto UPDATE
   async update (registro) {
-    console.log('atualizar voto', registro);
+    console.log('atualizar voto', registro.id);
 
     // resgatar registro anterior
     var anterior = await this.dao.getById(registro.id);

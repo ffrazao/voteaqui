@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Resolve } from '@angular/router';
+import { Resolve, Router } from '@angular/router';
 import { ActivatedRouteSnapshot } from '@angular/router';
 import { RouterStateSnapshot } from '@angular/router';
 
@@ -14,6 +14,7 @@ export class FormResolve implements Resolve<Votacao> {
   constructor(
     private servico: ConfigService,
     private mensagem: MensagemService,
+    private router: Router
   ) {
   }
 
@@ -21,7 +22,15 @@ export class FormResolve implements Resolve<Votacao> {
     route: ActivatedRouteSnapshot,
     state: RouterStateSnapshot
   ): Promise<any> {
-    return this.servico.restore(route.params.id, await this.mensagem.confirmeModelo('Digite a senha de acesso', ConfirmarVotoComponent));
+    const senha = await this.mensagem.confirmeModelo('Digite a senha de acesso', ConfirmarVotoComponent);
+    console.log(`senha [${senha}]`);
+    if (senha && senha.trim().length) {
+      console.log(`abriu com senha [${senha}]`);
+      return this.servico.restore(route.params.id, senha);
+    } else {
+      console.log(`senha nao infomrada`);
+      this.router.navigate(['/', 'config']);
+    }
   }
 
 }

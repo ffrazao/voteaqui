@@ -1,3 +1,5 @@
+import { ConfirmarVotoComponent } from './../cedula/confirmar-voto/confirmar-voto.component';
+import { MensagemService } from './../comum/service/mensagem/mensagem.service';
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -11,7 +13,8 @@ import { Votacao } from './../modelo/entidade/votacao';
 export class ConfigService {
 
   constructor(
-    private http: HttpClient
+    private http: HttpClient,
+    private mensagem: MensagemService
   ) { }
 
   public novo(dados: Votacao): Observable<any> {
@@ -26,8 +29,12 @@ export class ConfigService {
     return this.http.get(`${environment.API_URL}/api/votacao/${id}/${senha}`);
   }
 
-  public update(dados: Votacao): Observable<any> {
-    return this.http.put(`${environment.API_URL}/api/votacao`, dados);
+  public update(dados: Votacao, senha: string): Observable<any> {
+    return this.http.put(`${environment.API_URL}/api/votacao/${senha}`, dados);
+  }
+
+  public delete(id: number, senha: string): Observable<any> {
+    return this.http.delete(`${environment.API_URL}/api/votacao/${id}/${senha}`);
   }
 
   public list(): Observable<any> {

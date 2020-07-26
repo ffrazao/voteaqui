@@ -14,7 +14,7 @@ class ParticipanteBo {
 
   // API Participante CREATE
   async create(registro, votacaoId) {
-    console.log(`criar participante`, registro);
+    console.log(`criar participante`);
 
     // GERAR SENHA AUTOMATICAMENTE
     registro.senha = (Math.floor(Math.random() * 10000) + 10000)
@@ -44,7 +44,7 @@ class ParticipanteBo {
     var registro = await this.dao.getById(id);
     if (registro) {
       if (escondeSenha) {
-        console.log("escondendo senha de participante");
+        console.log('escondendo senha de participante');
         delete registro.senha;
       }
       result = registro;
@@ -116,10 +116,10 @@ class ParticipanteBo {
 
   async alterarSenha(id, senhaAtual, senhaNova) {
     if (!(await this.validaSenha(id, senhaAtual))) {
-      throw new Error("Senha inválida!");
+      throw new Error('Senha inválida!');
     }
     if (!senhaNova || !senhaNova.trim().length) {
-      throw new Error("Senha nula!");
+      throw new Error('Senha nula!');
     }
     // this.dao.updateSenha(id, bcrypt.hashSync(senhaNova, 10));
     this.dao.updateSenha(id, senhaNova);
@@ -128,6 +128,7 @@ class ParticipanteBo {
 
   // API Votacao RESTORE
   async validaSenha(id, senha) {
+    console.log(`validaSenha(${id}, ${senha})`)
     var registro = await this.dao.getById(id);
     var result = false;
     if (!registro) {
@@ -135,31 +136,31 @@ class ParticipanteBo {
     }
     if (senha === registro.senha) {
       result = true;
-      console.log("acertou");
+      console.log('acertou');
     } else {
       registro.senhaTentativa++;
-      console.log("errou", registro.senhaTentativa);
+      console.log('errou', registro.senhaTentativa);
     }
     if (registro.senhaTentativa >= 3) {
       var bloqueio = new Date(new Date().getTime() + (30 * 60000));
       registro.senhaBloqueio = bloqueio;
       console.log(
-        "bloqueando senha ",
+        'bloqueando senha ',
         registro.senhaTentativa,
         registro.senhaBloqueio
       );
     }
-    console.log("atualizando bloqueio", id, registro);
+    console.log('atualizando bloqueio', id, registro);
     this.dao.updateSenhaBloqueio(id, registro);
     var bloqueadoPorTempo = await this.dao.senhaEmCarencia(id);
     console.log(`bloqueadoPorTempo`, JSON.stringify(bloqueadoPorTempo));
     if (bloqueadoPorTempo.bloqueado) {
       console.log(
-        "Dentro da carencia do bloqueio ",
+        'Dentro da carencia do bloqueio ',
         registro.senhaTentativa,
         registro.senhaBloqueio
       );
-      throw new Error("Senha BLOQUEADA, aguardando tempo de desbloqueio");
+      throw new Error('Senha BLOQUEADA, aguardando tempo de desbloqueio');
     }
     return result;
   }

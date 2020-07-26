@@ -141,6 +141,7 @@ class VotacaoDao {
   }
 
   updateDesbloqueiaSenha(id)  {
+    console.log('desbloqueando');
     return this.dao.run(
       `UPDATE ${this.nomeTabela}
        SET senhaTentativa = 0,

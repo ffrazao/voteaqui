@@ -15,7 +15,7 @@ class OpcaoBo {
 
   // API Opcao CREATE
   async create (registro, pautaId) {
-    console.log('criar opcao', registro);
+    console.log('criar opcao');
 
     registro.id = (
       await this.dao.create(

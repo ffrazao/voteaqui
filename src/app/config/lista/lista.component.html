@@ -42,7 +42,7 @@
           <div>
             <div>
               <button type="button" mat-button class="btn btn-secondary" [routerLink]="[registro.id]">Editar</button>
-              <button type="button" mat-button class="btn btn-secondary">Excluir</button>
+              <button type="button" mat-button class="btn btn-secondary" (click)="excluir(registro.id)">Excluir</button>
             </div>
           </div>
         </td>

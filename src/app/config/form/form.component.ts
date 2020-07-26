@@ -245,7 +245,7 @@ export class FormComponent implements OnInit {
     arquivo.readAsText(event.target.files[0]);
   }
 
-  enviar(event): void {
+  async enviar(event): Promise<any> {
     event.preventDefault();
     if (this.frm.invalid) {
       const msg = 'Dados inválidos. Corrija-os antes de enviar.';
@@ -262,7 +262,11 @@ export class FormComponent implements OnInit {
         this.mensagem.erro(`Erro ao processar. (${err})`);
       });
     } else {
-      this.servico.update(this.frm.value as Votacao).subscribe((r) => {
+      const senha = await this.mensagem.confirmeModelo('Digite a senha de acesso', ConfirmarVotoComponent);
+      if (!senha || !senha.trim().length) {
+        return;
+      }
+      this.servico.update(this.frm.value as Votacao, senha).subscribe((r) => {
         console.log(r);
         this.mensagem.sucesso('Sucesso. As informações foram salvas!');
         this._router.navigate(['/config']);

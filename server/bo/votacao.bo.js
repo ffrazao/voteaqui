@@ -1,9 +1,9 @@
-const VotacaoDao = require("../dao/votacao.dao");
-const PautaBo = require("./pauta.bo");
-const ParticipanteBo = require("./participante.bo");
-const VotoBo = require("./voto.bo");
-require("../util/funcoes");
-const bcrypt = require("bcrypt");
+const VotacaoDao = require('../dao/votacao.dao');
+const PautaBo = require('./pauta.bo');
+const ParticipanteBo = require('./participante.bo');
+const VotoBo = require('./voto.bo');
+require('../util/funcoes');
+const bcrypt = require('bcrypt');
 
 class VotacaoBo {
   constructor(dao, transporterEmail) {
@@ -19,16 +19,16 @@ class VotacaoBo {
     registro = {};
     registro.pautaLista = [];
     registro.participanteLista = [];
-    console.log("nova votacao", registro);
+    console.log('nova votacao', registro);
     return registro;
   }
 
   // API Votacao CREATE
   async create(registro) {
-    console.log("criar votacao", registro);
+    console.log('criar votacao');
 
     if (!registro.senha || !registro.senha.length) {
-      throw new Error("Senha nula não permitida");
+      throw new Error('Senha nula não permitida');
     }
     // encryptar a senha
     registro.senha = bcrypt.hashSync(registro.senha, 10);
@@ -68,13 +68,13 @@ class VotacaoBo {
         result.id
       );
     }
-    console.log(`votacao (${JSON.stringify(result)})`);
+    // console.log(`votacao (${JSON.stringify(result)})`);
     return result;
   }
 
   // API Votacao UPDATE
   async update(registro) {
-    console.log("atualizar votacao", registro);
+    console.log('atualizar votacao', registro.id);
 
     // resgatar registro anterior
     var anterior = await this.restore(registro.id);
@@ -117,7 +117,7 @@ class VotacaoBo {
 
   // API Votacao RESTORE
   async list() {
-    console.log("carregar lista de votacao");
+    console.log('carregar lista de votacao');
     var result = null;
     var registro = await this.dao.getAll();
     if (registro) {
@@ -126,7 +126,7 @@ class VotacaoBo {
         result.push(await this.restore(r.id));
       }
     }
-    console.log(`lista de votacao (${JSON.stringify(result)})`);
+    // console.log(`lista de votacao (${JSON.stringify(result)})`);
     return result;
   }
 
@@ -134,7 +134,7 @@ class VotacaoBo {
     var result = null;
     var registro = await this.dao.getByParticipanteIdentificacao(identificacao);
     if (registro && registro.length) {
-      console.log("registro encontrado ===> ", registro);
+      // console.log('registro encontrado ===> ', registro);
       var votacaoLista = [];
       var participante = null;
       for (var r of registro) {
@@ -175,8 +175,8 @@ class VotacaoBo {
     if (!result.resultado) {
       new Promise(async (resolve, reject) => {
         try {
-          getConexaoMySql().query("BEGIN");
-          console.log("Início apuração");
+          getConexaoMySql().query('BEGIN');
+          console.log('Início apuração');
           var votacao = await this.restore(votacaoId);
           const resultadoJson = {
             codigo: votacao.codigo,
@@ -233,7 +233,7 @@ class VotacaoBo {
                       .find((pl) => pl.codigo === p.codigo)
                       .opcaoLista.find((ol) => ol.codigo === o.codigo);
                     if (!valor) {
-                      valor = "branco";
+                      valor = 'branco';
                     }
                     if (!r.valor[valor]) {
                       r.valor[valor] = 0;
@@ -263,13 +263,13 @@ class VotacaoBo {
             resultado: resultadoJson,
           };
 
-          console.log("resultado ===> ", JSON.stringify(result));
+          console.log('resultado ===> ', JSON.stringify(result));
           await this.dao.updateResultado(votacaoId, JSON.stringify(result));
           resolve(true);
 
-          getConexaoMySql().query("COMMIT");
+          getConexaoMySql().query('COMMIT');
         } catch (e) {
-          getConexaoMySql().query("ROLLBACK");
+          getConexaoMySql().query('ROLLBACK');
           reject(e);
           throw e;
         }
@@ -287,18 +287,19 @@ class VotacaoBo {
 
   async alterarSenha(id, senhaAtual, senhaNova) {
     if (!(await this.validaSenha(id, senhaAtual))) {
-      throw new Error("Senha inválida!");
+      throw new Error('Senha inválida!');
     }
     if (!senhaNova || !senhaNova.trim().length) {
-      throw new Error("Senha nula!");
+      throw new Error('Senha nula!');
     }
     this.dao.updateSenha(id, bcrypt.hashSync(senhaNova, 10));
     return true;
   }
 
   // API Votacao RESTORE
-  async validaSenha(votacaoId, senha) {
-    var registro = await this.dao.getById(votacaoId);
+  async validaSenha(id, senha) {
+    console.log(`validaSenha(${id}, ${senha})`)
+    var registro = await this.dao.getById(id);
     var result = false;
     if (!registro) {
       return result;
@@ -315,12 +316,12 @@ class VotacaoBo {
       registro.senhaBloqueio = bloqueio;
       console.log('bloqueando senha ', registro.senhaTentativa, registro.senhaBloqueio);
     }
-    this.dao.updateSenhaBloqueio(votacaoId, registro);
-    var bloqueadoPorTempo = await this.dao.senhaEmCarencia(votacaoId);
+    this.dao.updateSenhaBloqueio(id, registro);
+    var bloqueadoPorTempo = await this.dao.senhaEmCarencia(id);
     console.log(`bloqueadoPorTempo`, JSON.stringify(bloqueadoPorTempo));
     if (bloqueadoPorTempo.bloqueado) {
       console.log('Dentro da carencia do bloqueio ', registro.senhaTentativa, registro.senhaBloqueio);
-      throw new Error("Senha BLOQUEADA, aguardando tempo de desbloqueio");
+      throw new Error('Senha BLOQUEADA, aguardando tempo de desbloqueio');
     }
     return result;
   }
@@ -330,7 +331,7 @@ class VotacaoBo {
 
   async enviarCedula(mensagem) {
     if (!(await this.validaSenha(mensagem.votacao.id, mensagem.senha))) {
-      throw new Error("Senha inválida!");
+      throw new Error('Senha inválida!');
     }
     var resultado = [];
     for (var id of mensagem.participanteIdLista) {
@@ -338,7 +339,7 @@ class VotacaoBo {
 
       console.log(`enviando ${mensagem.meio} para ${participante.nome}`);
 
-      if (mensagem.meio === "whatsapp") {
+      if (mensagem.meio === 'whatsapp') {
         var msg = `Olá ${participante.nome}!,
 
 Encaminhamos o link ${mensagem.API_URL}/${participante.identificacao}/${mensagem.votacao.id}
@@ -355,7 +356,7 @@ ATENÇÃO: memorize esta senha, ela será solicitada durante o processo de vota�
       } else {
         var msg = `<p>Olá ${participante.nome}!,</p>
         <p></p>
-        <p>Encaminhamos o link <a href="${mensagem.API_URL}/${participante.identificacao}/${mensagem.votacao.id}">${mensagem.API_URL}/${participante.identificacao}/${mensagem.votacao.id}</a></p>
+        <p>Encaminhamos o link <a href='${mensagem.API_URL}/${participante.identificacao}/${mensagem.votacao.id}'>${mensagem.API_URL}/${participante.identificacao}/${mensagem.votacao.id}</a></p>
         <p>e a sua senha <b>${participante.senha}</b></p>
         <p>para a votação <b><u>${mensagem.votacao.nome}</u></b></p>
         <p></p>

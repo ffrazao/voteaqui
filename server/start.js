@@ -98,11 +98,13 @@ app.get("/api/votacao/:id/:senha", async function (req, res) {
   }
   res.end();
 });
-app.put("/api/votacao", async function (req, res) {
+app.put("/api/votacao/desbloquear", async function (req, res) {
   var registro = req.body;
   try {
     getConexaoMySql().query("BEGIN");
-    var result = await votacaoBo.update(registro);
+    console.log(`desbloqueando votacao ${registro.id}`);
+    var result = await votacaoBo.updateDesbloqueiaSenha(registro.id);
+    console.log(`votacao ${registro.id} desbloqueada`);
     res.write(`${result}`);
     getConexaoMySql().query("COMMIT");
   } catch (e) {
@@ -116,17 +118,58 @@ app.put("/api/votacao", async function (req, res) {
   }
   res.end();
 });
-app.delete("/api/votacao", async function (req, res) {
+app.put("/api/votacao/:senha", async function (req, res) {
   var registro = req.body;
-  await votacaoBo.delete(registro.id);
+  try {
+    if (!(await votacaoBo.validaSenha(registro.id, req.params.senha))) {
+      var msg = `Senha inválida`;
+      res.statusMessage = msg;
+      res.sendStatus(500);
+    } else {
+      getConexaoMySql().query("BEGIN");
+      var result = await votacaoBo.update(registro);
+      res.write(`${result}`);
+      getConexaoMySql().query("COMMIT");
+    }
+  } catch (e) {
+    // rollback
+    getConexaoMySql().query("ROLLBACK");
+    var msg = `Erro ao atualizar registro (${e})`;
+    console.log(msg);
+    res.status(500);
+    res.statusMessage = msg;
+    res.write(JSON.stringify({ msg }));
+  }
+  res.end();
+});
+app.delete("/api/votacao/:id/:senha", async function (req, res) {
+  try {
+    if (!(await votacaoBo.validaSenha(req.params.id, req.params.senha))) {
+      var msg = `Senha inválida`;
+      res.statusMessage = msg;
+      res.sendStatus(500);
+    } else {
+      getConexaoMySql().query("BEGIN");
+      await votacaoBo.delete(req.params.id);
+      getConexaoMySql().query("COMMIT");
+      res.write(`true`);
+    }
+  } catch (e) {
+    getConexaoMySql().query("ROLLBACK");
+    var msg = `Erro ao apagar registro (${e})`;
+    console.log(msg);
+    res.status(500);
+    res.statusMessage = msg;
+    res.write(JSON.stringify({ msg }));
+  }
   res.end();
 });
 app.get("/api/votacao", async function (req, res) {
   try {
     var result = await votacaoBo.list();
-    console.log("result", result);
+    // console.log("result", result);
     if (result) {
-      console.log(JSON.stringify(result));
+      // console.log(JSON.stringify(result));
       res.write(JSON.stringify(result));
     } else {
       var msg = `Registro não encontrado`;
@@ -145,7 +188,6 @@ app.get("/api/votacao", async function (req, res) {
 app.put(
   "/api/votacao/:id/alterar-senha/:senhaAtual/:senhaNova",
   async function (req, res) {
-    console.log("altera senha", req.params);
     try {
       getConexaoMySql().query("BEGIN");
       var result = await votacaoBo.alterarSenha(
@@ -178,26 +220,6 @@ app.post("/api/votacao/cedula", async function (req, res) {
     res.status(500);
     res.statusMessage = "Erro no envio das cédulas [" + JSON.stringify(e) + "]";
     res.write(res.statusMessage);
-  }
-  res.end();
-});
-app.put("/api/votacao/desbloquear", async function (req, res) {
-  var registro = req.body;
-  try {
-    getConexaoMySql().query("BEGIN");
-    console.log(`desbloqueando votacao ${registro.id}`);
-    var result = await votacaoBo.updateDesbloqueiaSenha(registro.id);
-    console.log(`votacao ${registro.id} desbloqueada`);
-    res.write(`${result}`);
-    getConexaoMySql().query("COMMIT");
-  } catch (e) {
-    // rollback
-    getConexaoMySql().query("ROLLBACK");
-    var msg = `Erro ao atualizar registro (${e})`;
-    console.log(msg);
-    res.status(500);
-    res.statusMessage = msg;
-    res.write(JSON.stringify({ msg }));
   }
   res.end();
 });
