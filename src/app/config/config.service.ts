@@ -1,11 +1,10 @@
-import { ConfirmarVotoComponent } from './../cedula/confirmar-voto/confirmar-voto.component';
-import { MensagemService } from './../comum/service/mensagem/mensagem.service';
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
-import { environment } from './../../environments/environment';
-import { Votacao } from './../modelo/entidade/votacao';
+import { MensagemService } from '../comum/servico/mensagem/mensagem.service';
+import { environment } from '../../environments/environment';
+import { Votacao } from '../modelo/entidade/votacao';
 
 @Injectable({
   providedIn: 'root'

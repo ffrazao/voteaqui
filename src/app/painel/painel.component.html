@@ -83,7 +83,7 @@
           <td>{{situacao(vot.inicio, vot.termino).nome}}</td>
           <td>
             <div class="alert alert-success" *ngIf="vot.votou && situacao(vot.inicio, vot.termino).sigla === 'E'">
-              O seu voto já foi registrado!
+              O seu voto já foi registrado! Após o término da votação o resultado estará disponível aqui
             </div>
             <button type="button" class="btn btn-success btn-sm" *ngIf="!vot.votou && situacao(vot.inicio, vot.termino).sigla === 'E'"
               [routerLink]="[vot.id]">

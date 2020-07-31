@@ -9,7 +9,7 @@ import { Opcao } from './../../modelo/entidade/opcao';
 import { Pauta } from './../../modelo/entidade/pauta';
 import { Votacao } from './../../modelo/entidade/votacao';
 import { AlterarSenhaComponent } from './../../cedula/alterar-senha/alterar-senha.component';
-import { MensagemService } from './../../comum/service/mensagem/mensagem.service';
+import { MensagemService } from './../../comum/servico/mensagem/mensagem.service';
 import { environment } from './../../../environments/environment';
 
 @Component({
@@ -362,10 +362,10 @@ export class FormComponent implements OnInit {
         } else {
           for (const r of result) {
             new Promise((resolve, reject) => {
-              setTimeout(() => {
+              // setTimeout(() => {
                 window.open(r.url, '_blank');
                 resolve(true);
-              }, tempo);
+             // }, tempo);
             }).then(enviou => console.log(enviou));
           }
           this.mensagem.sucesso('WhatsApp enviados!!!');

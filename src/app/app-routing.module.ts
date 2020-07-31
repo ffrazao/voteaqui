@@ -11,6 +11,10 @@ const routes: Routes = [
     loadChildren: () => import('./config/config.module').then(m => m.ConfigModule)
   },
   {
+    path: 'usuario',
+    loadChildren: () => import('./usuario/usuario.module').then(m => m.UsuarioModule)
+  },
+  {
     path: 'resultado/:votacaoId',
     loadChildren: () => import('./resultado/resultado.module').then(m => m.ResultadoModule)
   },

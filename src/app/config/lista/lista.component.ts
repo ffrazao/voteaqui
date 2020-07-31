@@ -1,5 +1,5 @@
 import { ConfirmarVotoComponent } from './../../cedula/confirmar-voto/confirmar-voto.component';
-import { MensagemService } from './../../comum/service/mensagem/mensagem.service';
+import { MensagemService } from './../../comum/servico/mensagem/mensagem.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Component, OnInit } from '@angular/core';
 

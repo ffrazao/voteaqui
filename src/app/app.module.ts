@@ -1,4 +1,5 @@
-import { RodapeModule } from './rodape/rodape.module';
+import { MensagemModule } from './comum/servico/mensagem/mensagem.module';
+import { AnexarModule } from './comum/servico/anexar/anexar.module';
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule, LOCALE_ID } from '@angular/core';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
@@ -6,13 +7,15 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MatMomentDateModule } from '@angular/material-moment-adapter';
 import { HttpClientModule } from '@angular/common/http';
 import { registerLocaleData } from '@angular/common';
+import { MatDialogModule } from '@angular/material/dialog';
+import { RodapeModule } from './rodape/rodape.module';
 import localeBr from '@angular/common/locales/pt';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
-import { ServiceModule } from './comum/service/service.module';
+import { ServicoModule } from './comum/servico/servico.module';
 
-registerLocaleData(localeBr, 'pt')
+registerLocaleData(localeBr, 'pt');
 
 @NgModule({
   declarations: [
@@ -24,10 +27,16 @@ registerLocaleData(localeBr, 'pt')
     NgbModule,
     BrowserAnimationsModule,
     MatMomentDateModule,
+    MatDialogModule,
     HttpClientModule,
     RodapeModule,
 
-    ServiceModule,
+    ServicoModule,
+    AnexarModule,
+    MensagemModule,
+  ],
+  exports: [
+    MatDialogModule
   ],
   providers: [
     { provide: LOCALE_ID, useValue: 'pt' }

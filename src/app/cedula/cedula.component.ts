@@ -6,7 +6,7 @@ import { ConfirmarVotoComponent } from './confirmar-voto/confirmar-voto.componen
 import { Voto } from './../modelo/entidade/voto';
 import { CedulaService } from './cedula.service';
 import { Opcao } from './../modelo/entidade/opcao';
-import { MensagemService } from '../comum/service/mensagem/mensagem.service';
+import { MensagemService } from '../comum/servico/mensagem/mensagem.service';
 
 @Component({
   selector: 'app-cedula',
@@ -50,6 +50,9 @@ export class CedulaComponent implements OnInit {
           this.router.navigate(['../', this.identificacao]);
         } else if (agora.getTime() > termino.getTime()) {
           this.mensagem.erro(`Votação (${this.entidade.votacaoLista[0].nome}) encerrada em (${termino})`);
+          this.router.navigate(['../', this.identificacao]);
+        } else if (this.entidade && this.entidade.votacaoLista[0] && this.entidade.votacaoLista[0].votou) {
+          this.mensagem.erro(`O seu voto já foi registrado para esta votação!`);
           this.router.navigate(['../', this.identificacao]);
         } else {
           for (const pauta of this.entidade.votacaoLista[0].pautaLista) {

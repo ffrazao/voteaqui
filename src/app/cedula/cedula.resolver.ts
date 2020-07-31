@@ -1,11 +1,10 @@
-import { MensagemService } from './../comum/service/mensagem/mensagem.service';
-import { CedulaService } from './cedula.service';
 import { Injectable } from '@angular/core';
-
 import { Resolve, ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
 import { Observable, of } from 'rxjs';
 import { catchError } from 'rxjs/internal/operators';
 
+import { MensagemService } from '../comum/servico/mensagem/mensagem.service';
+import { CedulaService } from './cedula.service';
 
 @Injectable({ providedIn: 'root' })
 export class CedulaResolver implements Resolve<string> {

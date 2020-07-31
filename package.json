@@ -24,6 +24,7 @@
     "@angular/platform-browser": "~10.0.2",
     "@angular/platform-browser-dynamic": "~10.0.2",
     "@angular/router": "~10.0.2",
+    "@brunoc/ngx-viacep": "^2.1.2",
     "@ng-bootstrap/ng-bootstrap": "^7.0.0",
     "bcrypt": "^5.0.0",
     "bluebird": "^3.7.2",

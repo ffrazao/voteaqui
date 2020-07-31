@@ -356,7 +356,7 @@ ATENÇÃO: memorize esta senha, ela será solicitada durante o processo de vota�
       } else {
         var msg = `<p>Olá ${participante.nome}!,</p>
         <p></p>
-        <p>Encaminhamos o link <a href='${mensagem.API_URL}/${participante.identificacao}/${mensagem.votacao.id}'>${mensagem.API_URL}/${participante.identificacao}/${mensagem.votacao.id}</a></p>
+        <p>Encaminhamos o link <a href='${mensagem.API_URL}/${participante.identificacao}/${mensagem.votacao.id}'>Vote Aqui</a></p>
         <p>e a sua senha <b>${participante.senha}</b></p>
         <p>para a votação <b><u>${mensagem.votacao.nome}</u></b></p>
         <p></p>

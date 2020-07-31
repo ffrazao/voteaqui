@@ -1,8 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { MensagemService } from '../comum/service/mensagem/mensagem.service';
+import { MensagemService } from '../comum/servico/mensagem/mensagem.service';
 import { ResultadoService } from './resultado.service';
-import { ThrowStmt } from '@angular/compiler';
 
 @Component({
   selector: 'app-resultado',

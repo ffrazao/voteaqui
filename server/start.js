@@ -6,6 +6,8 @@ const nomeApp = process.env.npm_package_name;
 const conexaoDbDao = require("./inicia-conexao-db.dao");
 const conexaoEmail = require("./inicia-conexao-email");
 
+const UsuarioBo = require("./bo/usuario.bo");
+const usuarioBo = new UsuarioBo(conexaoDbDao);
 const VotacaoBo = require("./bo/votacao.bo");
 const votacaoBo = new VotacaoBo(conexaoDbDao, conexaoEmail);
 const ParticipanteBo = require("./bo/participante.bo");
@@ -28,6 +30,105 @@ app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
 // ROTAS DA API
+
+// API Usuario
+app.post("/api/usuario/novo", async function (req, res) {
+  var registro = req.body;
+  res.write(JSON.stringify(await usuarioBo.novo(registro)));
+  res.end();
+});
+app.post("/api/usuario", async function (req, res) {
+  var registro = req.body;
+  try {
+    getConexaoMySql().query("BEGIN");
+    var result = await usuarioBo.create(registro);
+    res.write(`${result}`);
+    getConexaoMySql().query("COMMIT");
+  } catch (e) {
+    // rollback
+    getConexaoMySql().query("ROLLBACK");
+    var msg = `Erro ao inserir registro (${e})`;
+    console.log(msg);
+    res.status(500);
+    res.statusMessage = msg;
+    res.write(JSON.stringify({ msg }));
+  }
+  res.end();
+});
+app.get("/api/usuario/:id", async function (req, res) {
+  try {
+    var result = await usuarioBo.restore(req.params.id);
+    if (result) {
+      res.write(JSON.stringify(result));
+    } else {
+      var msg = `Registro não encontrado`;
+      res.statusMessage = msg;
+      res.sendStatus(404);
+    }
+  } catch (e) {
+    var msg = `Erro ao carregar registro (${e})`;
+    console.log(msg);
+    res.status(500);
+    res.statusMessage = msg;
+    res.write(JSON.stringify({ msg }));
+  }
+  res.end();
+});
+app.put("/api/usuario", async function (req, res) {
+  var registro = req.body;
+  try {
+    getConexaoMySql().query("BEGIN");
+    var result = await usuarioBo.update(registro);
+    res.write(`${result}`);
+    getConexaoMySql().query("COMMIT");
+  } catch (e) {
+    // rollback
+    getConexaoMySql().query("ROLLBACK");
+    var msg = `Erro ao atualizar registro (${e})`;
+    console.log(msg);
+    res.status(500);
+    res.statusMessage = msg;
+    res.write(JSON.stringify({ msg }));
+  }
+  res.end();
+});
+app.delete("/api/usuario/:id", async function (req, res) {
+  try {
+    getConexaoMySql().query("BEGIN");
+    await usuarioBo.delete(req.params.id);
+    getConexaoMySql().query("COMMIT");
+    res.write(`true`);
+  } catch (e) {
+    getConexaoMySql().query("ROLLBACK");
+    var msg = `Erro ao apagar registro (${e})`;
+    console.log(msg);
+    res.status(500);
+    res.statusMessage = msg;
+    res.write(JSON.stringify({ msg }));
+  }
+  res.end();
+});
+app.get("/api/usuario", async function (req, res) {
+  try {
+    var result = await usuarioBo.list();
+    // console.log('result', result);
+    if (result) {
+      // console.log(JSON.stringify(result));
+      res.write(JSON.stringify(result));
+    } else {
+      var msg = `Registro não encontrado`;
+      console.log(msg);
+      res.sendStatus(404);
+    }
+  } catch (e) {
+    var msg = `Erro ao carregar registros (${e})`;
+    console.log(msg);
+    res.status(500);
+    res.statusMessage = msg;
+    res.write(JSON.stringify({ msg }));
+  }
+  res.end();
+});
 
 // API Votacao
 app.post("/api/votacao/novo", async function (req, res) {
@@ -167,7 +268,7 @@ app.delete("/api/votacao/:id/:senha", async function (req, res) {
 app.get("/api/votacao", async function (req, res) {
   try {
     var result = await votacaoBo.list();
-    // console.log("result", result);
+    // console.log('result', result);
     if (result) {
       // console.log(JSON.stringify(result));
       res.write(JSON.stringify(result));

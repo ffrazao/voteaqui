@@ -1,12 +1,23 @@
-const nodemailer = require('nodemailer');
+const nodemailer = require("nodemailer");
 
 var transporter = nodemailer.createTransport({
-  service: 'gmail',
+  service: "gmail",
   auth: {
-    user: 'lacodeamordf@gmail.com',
+    user: "lacodeamordf@gmail.com",
     // pass: 'Laco-de-amor2020'
-    pass: 'fuxpykfclldpxzdb'
-  }
+    pass: "fuxpykfclldpxzdb",
+  },
 });
 
 module.exports = transporter;
+
+// auth: {
+//   user: 'lacodeamordf@gmail.com',
+//   // pass: 'Laco-de-amor2020'
+//   pass: 'fuxpykfclldpxzdb'
+// }
+
+// auth: {
+//   user: 'asserdf@gmail.com',
+//   pass: 'usuario3'
+// }
