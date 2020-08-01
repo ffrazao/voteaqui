@@ -1,9 +1,11 @@
 const ParticipanteDao = require(`../dao/participante.dao`);
 
 class ParticipanteBo {
-  constructor(dao) {
+  constructor(dao, transporterEmail, votacaoBo) {
     this.dbDao = dao;
     this.dao = new ParticipanteDao(this.dbDao);
+    this.transporterEmail = transporterEmail;
+    this.votacaoBo = votacaoBo;
   }
 
   novo(registro) {
@@ -111,6 +113,32 @@ class ParticipanteBo {
 
   async votar(participanteId) {
     var result = await this.dao.votar(participanteId);
+
+    // enviar email
+    var participante = await this.dao.getById(participanteId);
+    if (participante.email) {
+      var votacao = await this.votacaoBo.restore(participante.votacaoId);
+
+      var msg = `<p>Olá ${participante.nome}!,</p>
+      <p></p>
+      <p>Obrigado por ter participado da votação <b><u>${votacao.nome}</u></b></p>`;
+
+      var mailOptions = {
+        from: `voteaquidf@gmail.com`,
+        to: `${participante.email}`,
+        subject: `Comprovante de Votação`,
+        html: msg,
+      };
+
+      this.transporterEmail.sendMail(mailOptions, function (error, info) {
+        if (error) {
+          console.log(`Erro ao enviar: `, error);
+        } else {
+          console.log(`Email sent: ` + info.response);
+        }
+      });
+    }
+
     return result;
   }
 
@@ -167,6 +195,10 @@ class ParticipanteBo {
 
   async updateDesbloqueiaSenha(id) {
     this.dao.updateDesbloqueiaSenha(id);
+  }
+
+  async getSenhaStatus(id) {
+    return await this.dao.getSenhaStatus(id);
   }
 }
 

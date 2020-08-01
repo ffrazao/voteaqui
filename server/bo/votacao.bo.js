@@ -150,7 +150,9 @@ class VotacaoBo {
           descricao: r.descricao,
           inicio: r.inicio,
           termino: r.termino,
+          situacao: r.situacao,
           senha: r.senha,
+          senhaBloqueio: r.senhaBloqueio,
           votou: r.votou,
         };
         votacao.pautaLista = await this.pautaBo.getByVotacaoId(r.id);
@@ -340,30 +342,31 @@ class VotacaoBo {
       console.log(`enviando ${mensagem.meio} para ${participante.nome}`);
 
       if (mensagem.meio === 'whatsapp') {
-        var msg = `Olá ${participante.nome}!,
+        var msg =
+`Olá ${participante.nome.substr(0, 12)}!,
 
-Encaminhamos o link ${mensagem.API_URL}/${participante.identificacao}/${mensagem.votacao.id}
-e a sua senha *${participante.senha}*
-para a votação *_${mensagem.votacao.nome}_*
+Votação *_${mensagem.votacao.nome}_*
+Sua senha *${participante.senha}*
+Link ${mensagem.API_URL}/${participante.identificacao}/${mensagem.votacao.id}
 
-ATENÇÃO: memorize esta senha, ela será solicitada durante o processo de votação`;
+ATENÇÃO: *_memorize esta senha_*, ela será solicitada durante o processo de votação`;
 
         resultado.push({
           url: `https://api.whatsapp.com/send?phone=${
             participante.telefone
           }&text=${encodeURI(msg)}&preview_url=true`,
         });
-      } else {
+      } else if (mensagem.meio === 'email') {
         var msg = `<p>Olá ${participante.nome}!,</p>
         <p></p>
-        <p>Encaminhamos o link <a href='${mensagem.API_URL}/${participante.identificacao}/${mensagem.votacao.id}'>Vote Aqui</a></p>
-        <p>e a sua senha <b>${participante.senha}</b></p>
-        <p>para a votação <b><u>${mensagem.votacao.nome}</u></b></p>
+        <p>Para a votação <b><u>${mensagem.votacao.nome}</u></b></p>
+        <p>Encaminhamos a sua senha <h1><b>${participante.senha}</b></h1></p>
+        <p>Para iniciar clique no link <a href='${mensagem.API_URL}/${participante.identificacao}/${mensagem.votacao.id}'>Vote Aqui</a></p>
         <p></p>
         <p>ATENÇÃO: memorize esta senha, ela será solicitada durante o processo de votação</p>`;
 
         var mailOptions = {
-          from: `voteaqui@gmail.com`,
+          from: `voteaquidf@gmail.com`,
           to: `${participante.email}`,
           subject: `Cédula de Votação`,
           html: msg,
@@ -372,11 +375,13 @@ ATENÇÃO: memorize esta senha, ela será solicitada durante o processo de vota�
         this.transporterEmail.sendMail(mailOptions, function (error, info) {
           if (error) {
             console.log(`Erro ao enviar: `, error);
-            break;
+            // break;
           } else {
             console.log(`Email sent: ` + info.response);
           }
         });
+      } else {
+
       }
     }
     return resultado;

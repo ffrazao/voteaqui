@@ -12,6 +12,7 @@ export class Votacao {
   public senhaTotDesbloqueio: number;
   public inicio: string;
   public termino: string;
+  public situacao: string;
   public pautaLista: Pauta[] = [];
   public participanteLista: Participante[] = [];
 }

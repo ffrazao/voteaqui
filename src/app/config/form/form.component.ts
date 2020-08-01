@@ -65,7 +65,7 @@ export class FormComponent implements OnInit {
   private criarVotacao(votacao: Votacao): FormGroup {
     const result = this.fb.group({
       id: [votacao.id, []],
-      codigo: [votacao.codigo, [Validators.required]],
+      codigo: [votacao.codigo, [Validators.required, Validators.pattern(/^[\w]+$/)]],
       nome: [votacao.nome, [Validators.required]],
       descricao: [votacao.descricao, [Validators.required]],
       senha: [votacao.senha, [Validators.required]],
@@ -92,10 +92,11 @@ export class FormComponent implements OnInit {
   private criarPauta(valor: Pauta): FormGroup {
     const result = this.fb.group({
       id: [valor.id, []],
-      codigo: [valor.codigo, [Validators.required]],
+      codigo: [valor.codigo, [Validators.required, Validators.pattern(/^[\w]+$/)]],
       nome: [valor.nome, [Validators.required]],
       descricao: [valor.descricao, [Validators.required]],
-      quantidadeEscolha: [valor.quantidadeEscolha, [Validators.required]],
+      quantidadeEscolha: [valor.quantidadeEscolha, [Validators.required, Validators.pattern(/^[1-9]+[\d]*$/), Validators.min(1),
+      Validators.max(20)]],
       opcaoLista: this.criarOpcaoLista(valor.opcaoLista),
     });
     return result;
@@ -113,7 +114,7 @@ export class FormComponent implements OnInit {
   private criarOpcao(valor: Opcao): FormGroup {
     const result = this.fb.group({
       id: [valor.id, []],
-      codigo: [valor.codigo, [Validators.required]],
+      codigo: [valor.codigo, [Validators.required, Validators.pattern(/^[\w]+$/)]],
       nome: [valor.nome, [Validators.required]],
       descricao: [valor.descricao, [Validators.required]],
     });
@@ -132,10 +133,10 @@ export class FormComponent implements OnInit {
   private criarParticipante(valor: Participante): FormGroup {
     const result = this.fb.group({
       id: [valor.id, []],
-      identificacao: [valor.identificacao, [Validators.required]],
+      identificacao: [valor.identificacao, [Validators.required, Validators.pattern(/^[1-9]+[\d]*$/)]],
       nome: [valor.nome, [Validators.required]],
-      telefone: [valor.telefone, []],
-      email: [valor.email, []],
+      telefone: [valor.telefone, [Validators.pattern(/^[1-9]+[\d]*$/)]],
+      email: [valor.email, [Validators.email]],
       senhaTentativa: [valor.senhaTentativa, []],
       senhaBloqueio: [valor.senhaBloqueio, []],
       senhaTotDesbloqueio: [valor.senhaTotDesbloqueio, []],
@@ -363,9 +364,9 @@ export class FormComponent implements OnInit {
           for (const r of result) {
             new Promise((resolve, reject) => {
               // setTimeout(() => {
-                window.open(r.url, '_blank');
-                resolve(true);
-             // }, tempo);
+              window.open(r.url, '_blank');
+              resolve(true);
+              // }, tempo);
             }).then(enviou => console.log(enviou));
           }
           this.mensagem.sucesso('WhatsApp enviados!!!');

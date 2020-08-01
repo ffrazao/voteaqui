@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 
 import { MensagemService } from './../comum/servico/mensagem/mensagem.service';
+import { situacaoNome } from '../comum/ferramenta/ferramenta-sistema';
 
 @Component({
   selector: 'app-painel',
@@ -42,26 +43,15 @@ export class PainelComponent implements OnInit {
     });
   }
 
-  situacao(inicio, termino): { sigla: string, nome: string } {
-    let agora = new Date();
-    inicio = new Date(inicio.replace(/-/g, '/'));
-    termino = new Date(termino.replace(/-/g, '/'));
-    if (agora.getTime() >= inicio.getTime() && agora.getTime() <= termino.getTime()) {
-      return { sigla: 'E', nome: 'Em andamento' };
-    } else if (agora.getTime() < inicio.getTime()) {
-      return { sigla: 'F', nome: 'Futuro' };
-    } else if (agora.getTime() > termino.getTime()) {
-      return { sigla: 'X', nome: 'Encerrado' };
-    } else {
-      return { sigla: '', nome: '' };
-    }
+  situacaoNome(sigla): string {
+    return situacaoNome(sigla);
   }
 
   filtrarVotacao(votacao: any, params): boolean {
-    return (!params[2] || params[2].trim().length === 0 ||
-      votacao.nome.trim().toLowerCase().indexOf(params[2].toLowerCase()) >= 0) &&
+    return (!params[1] || params[1].trim().length === 0 ||
+      votacao.nome.trim().toLowerCase().indexOf(params[1].toLowerCase()) >= 0) &&
       (!params[0] || params[0].trim().length === 0 ||
-        params[1](votacao.inicio, votacao.termino).sigla === params[0]);
+        votacao.situacao === params[0]);
   }
 
 }

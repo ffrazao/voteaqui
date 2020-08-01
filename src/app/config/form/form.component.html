@@ -3,7 +3,7 @@
 /{{frm?.value | json}}/
 -->
 
-<form [formGroup]="frm" (submit)="enviar($event)">
+<form [formGroup]="frm" (submit)="enviar($event)" style="background-color: white;">
 
   <h1 class="mt-5 text-info">Cadastro de Votação</h1>
 
@@ -11,6 +11,12 @@
     <mat-form-field appearance="fill" style="min-width: 50%;">
       <mat-label>Código</mat-label>
       <input matInput formControlName="codigo" [readonly]="frm.value.id">
+      <mat-error *ngIf="frm.controls.codigo.hasError('required')">
+        Campo obrigatório!
+      </mat-error>
+      <mat-error *ngIf="frm.controls.codigo.hasError('pattern')">
+        Somente letras não acentuadas, números ou o caractere '_'!
+      </mat-error>
     </mat-form-field>
   </div>
 
@@ -18,6 +24,9 @@
     <mat-form-field appearance="fill" style="min-width: 50%;">
       <mat-label>Nome</mat-label>
       <input matInput formControlName="nome">
+      <mat-error *ngIf="frm.controls.nome.hasError('required')">
+        Campo obrigatório!
+      </mat-error>
     </mat-form-field>
   </div>
 
@@ -25,6 +34,9 @@
     <mat-form-field appearance="fill" style="width: 100%;">
       <mat-label>Descrição</mat-label>
       <textarea matInput mat-autosize formControlName="descricao"></textarea>
+      <mat-error *ngIf="frm.controls.descricao.hasError('required')">
+        Campo obrigatório!
+      </mat-error>
     </mat-form-field>
   </div>
 
@@ -32,6 +44,9 @@
     <mat-form-field appearance="fill">
       <mat-label>Início</mat-label>
       <input matInput type="datetime-local" formControlName="inicio" [min]="agora()">
+      <mat-error *ngIf="frm.controls.inicio.hasError('required')">
+        Campo obrigatório!
+      </mat-error>
     </mat-form-field>
   </div>
 
@@ -39,6 +54,9 @@
     <mat-form-field appearance="fill">
       <mat-label>Término</mat-label>
       <input matInput type="datetime-local" formControlName="termino" [min]="agora()">
+      <mat-error *ngIf="frm.controls.termino.hasError('required')">
+        Campo obrigatório!
+      </mat-error>
     </mat-form-field>
   </div>
 
@@ -46,6 +64,9 @@
     <mat-form-field appearance="fill" *ngIf="!frm.value.id">
       <mat-label>Senha</mat-label>
       <input matInput type="password" formControlName="senha">
+      <mat-error *ngIf="frm.controls.senha.hasError('required')">
+        Campo obrigatório!
+      </mat-error>
     </mat-form-field>
     <button type="button" class="btn btn-primary" *ngIf="frm.value.id" (click)="alterarSenha()">Alterar Senha</button>
   </div>
@@ -76,6 +97,12 @@
                 <mat-form-field appearance="fill">
                   <mat-label>Código</mat-label>
                   <input matInput formControlName="codigo" [readonly]="pauta.value.id">
+                  <mat-error *ngIf="pauta.controls.codigo.hasError('required')">
+                    Campo obrigatório!
+                  </mat-error>
+                  <mat-error *ngIf="pauta.controls.codigo.hasError('pattern')">
+                    Somente letras não acentuadas, números ou o caractere '_'!
+                  </mat-error>
                 </mat-form-field>
               </div>
             </td>
@@ -85,6 +112,9 @@
                 <mat-form-field appearance="fill">
                   <mat-label>Nome</mat-label>
                   <input matInput formControlName="nome">
+                  <mat-error *ngIf="pauta.controls.nome.hasError('required')">
+                    Campo obrigatório!
+                  </mat-error>
                 </mat-form-field>
               </div>
             </td>
@@ -96,6 +126,9 @@
                 <mat-form-field appearance="fill">
                   <mat-label>Descrição</mat-label>
                   <textarea matInput mat-autosize formControlName="descricao"></textarea>
+                  <mat-error *ngIf="pauta.controls.descricao.hasError('required')">
+                    Campo obrigatório!
+                  </mat-error>
                 </mat-form-field>
               </div>
             </td>
@@ -105,6 +138,18 @@
                 <mat-form-field appearance="fill">
                   <mat-label>Quantidade de Escolhas</mat-label>
                   <input matInput type="number" formControlName="quantidadeEscolha">
+                  <mat-error *ngIf="pauta.controls.quantidadeEscolha.hasError('required')">
+                    Campo obrigatório!
+                  </mat-error>
+                  <mat-error *ngIf="pauta.controls.quantidadeEscolha.hasError('min')">
+                    Valor mínimo é 1!
+                  </mat-error>
+                  <mat-error *ngIf="pauta.controls.quantidadeEscolha.hasError('max')">
+                    Valor máximo é 20!
+                  </mat-error>
+                  <mat-error *ngIf="pauta.controls.quantidadeEscolha.hasError('pattern')">
+                    Somente números!
+                  </mat-error>
                 </mat-form-field>
               </div>
             </td>
@@ -149,6 +194,12 @@
                           <mat-form-field appearance="fill">
                             <mat-label>Código</mat-label>
                             <input matInput formControlName="codigo" [readonly]="opcao.value.id">
+                            <mat-error *ngIf="opcao.controls.codigo.hasError('required')">
+                              Campo obrigatório!
+                            </mat-error>
+                            <mat-error *ngIf="opcao.controls.codigo.hasError('pattern')">
+                              Somente letras não acentuadas, números ou o caractere '_'!
+                            </mat-error>
                           </mat-form-field>
                         </div>
                       </td>
@@ -158,6 +209,9 @@
                           <mat-form-field appearance="fill">
                             <mat-label>Nome</mat-label>
                             <input matInput formControlName="nome">
+                            <mat-error *ngIf="opcao.controls.nome.hasError('required')">
+                              Campo obrigatório!
+                            </mat-error>
                           </mat-form-field>
                         </div>
                       </td>
@@ -169,6 +223,9 @@
                           <mat-form-field appearance="fill">
                             <mat-label>Descrição</mat-label>
                             <textarea matInput mat-autosize formControlName="descricao"></textarea>
+                            <mat-error *ngIf="opcao.controls.descricao.hasError('required')">
+                              Campo obrigatório!
+                            </mat-error>
                           </mat-form-field>
                         </div>
                       </td>
@@ -266,8 +323,7 @@
       <tbody formArrayName="participanteLista">
         <tr
           *ngFor="let participante of getLista(frm, 'participanteLista').controls | callback: filtrar: [filtro, filtroTexto]; let i = index"
-          [formGroupName]="i"
-          [class]="participante.value.senhaTentativa >= 3 ? 'table-danger': ''">
+          [formGroupName]="i" [class]="participante.value.senhaTentativa >= 3 ? 'table-danger': ''">
           <td>
             {{i+1}}.
           </td>
@@ -281,6 +337,12 @@
               <mat-form-field appearance="fill">
                 <mat-label>Identificação</mat-label>
                 <input matInput formControlName="identificacao">
+                <mat-error *ngIf="participante.controls.identificacao.hasError('required')">
+                  Campo obrigatório!
+                </mat-error>
+                <mat-error *ngIf="participante.controls.identificacao.hasError('pattern')">
+                  Somente números e sem zeros no início!
+                </mat-error>
               </mat-form-field>
             </div>
           </td>
@@ -290,6 +352,9 @@
               <mat-form-field appearance="fill">
                 <mat-label>Nome</mat-label>
                 <input matInput formControlName="nome">
+                <mat-error *ngIf="participante.controls.nome.hasError('required')">
+                  Campo obrigatório!
+                </mat-error>
               </mat-form-field>
             </div>
           </td>
@@ -299,6 +364,9 @@
               <mat-form-field appearance="fill">
                 <mat-label>Telefone</mat-label>
                 <input matInput formControlName="telefone">
+                <mat-error *ngIf="participante.controls.telefone.hasError('pattern')">
+                  Somente números e sem zeros no início!
+                </mat-error>
               </mat-form-field>
             </div>
           </td>
@@ -308,6 +376,9 @@
               <mat-form-field appearance="fill">
                 <mat-label>E-mail</mat-label>
                 <input matInput formControlName="email">
+                <mat-error *ngIf="participante.controls.email.hasError('email')">
+                  Valor inválido!
+                </mat-error>
               </mat-form-field>
             </div>
           </td>
@@ -315,9 +386,11 @@
             <mat-checkbox [checked]="participante.value.votou" [disabled]="true"></mat-checkbox>
           </td>
           <td>
-            Tentativas {{participante.value.senhaTentativa}}, tempo desbloqueio {{participante.value.senhaBloqueio}}, Tot. Desbloqueio
+            Tentativas {{participante.value.senhaTentativa}}, tempo desbloqueio {{participante.value.senhaBloqueio}},
+            Tot. Desbloqueio
             {{participante.value.senhaTotDesbloqueio}}
-            <button type="button" class="btn btn-primary" *ngIf="participante.value.senhaTentativa >= 3" (click)="desbloquear(participante.value.id)">Desbloquear</button>
+            <button type="button" class="btn btn-primary" *ngIf="participante.value.senhaTentativa >= 3"
+              (click)="desbloquear(participante.value.id)">Desbloquear</button>
           </td>
           <td>
             <div>

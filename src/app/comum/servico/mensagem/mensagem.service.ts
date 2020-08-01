@@ -12,7 +12,7 @@ export class MensagemService {
 
   horizontalPosition: MatSnackBarHorizontalPosition = 'center';
   verticalPosition: MatSnackBarVerticalPosition = 'top';
-  tempo = 2500;
+  tempo = 5000;
 
   constructor(
     // private toastr: ToastrService,

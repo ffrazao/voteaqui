@@ -5,6 +5,7 @@ import { Component, OnInit } from '@angular/core';
 
 import { Votacao } from './../../modelo/entidade/votacao';
 import { ConfigService } from './../config.service';
+import { situacaoNome } from '../../comum/ferramenta/ferramenta-sistema';
 
 @Component({
   selector: 'app-lista',
@@ -44,6 +45,10 @@ export class ListaComponent implements OnInit {
         setTimeout(() => window.location.reload(), 3 * 1000);
       }
     );
+  }
+
+  situacaoNome(sigla): string {
+    return situacaoNome(sigla);
   }
 
 }

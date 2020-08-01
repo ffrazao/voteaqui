@@ -1,5 +1,5 @@
 class ParticipanteDao {
-  nomeTabela = 'Participante';
+  nomeTabela = "Participante";
 
   constructor(dao) {
     this.dao = dao;
@@ -88,6 +88,7 @@ class ParticipanteDao {
       ON     v.id = p.votacaoId
       WHERE  (CONVERT_TZ(NOW(), @@session.time_zone, '-3:00') BETWEEN v.inicio AND v.termino)
       AND    p.votou = 0
+      AND    p.senhaBloqueio IS NULL
       AND    p.identificacao = ?
       AND    v.id = ?`,
       [identificacao, votacaoId]
@@ -112,7 +113,7 @@ class ParticipanteDao {
     );
   }
 
-  updateSenhaBloqueio(id, registro)  {
+  updateSenhaBloqueio(id, registro) {
     return this.dao.run(
       `UPDATE ${this.nomeTabela}
        SET senhaTentativa = ?,
@@ -123,13 +124,16 @@ class ParticipanteDao {
   }
 
   senhaEmCarencia(votacaoId) {
-    return this.dao.get(`
+    return this.dao.get(
+      `
     SELECT IFNULL(senhaBloqueio > CONVERT_TZ(NOW(), @@SESSION .time_zone, '-3:00'), 0) AS bloqueado
     FROM ${this.nomeTabela}
-    WHERE id = ?`, [votacaoId]);
+    WHERE id = ?`,
+      [votacaoId]
+    );
   }
 
-  updateDesbloqueiaSenha(id)  {
+  updateDesbloqueiaSenha(id) {
     return this.dao.run(
       `UPDATE ${this.nomeTabela}
        SET senhaTentativa = 0,
@@ -140,6 +144,21 @@ class ParticipanteDao {
     );
   }
 
+  getSenhaStatus(id) {
+    return this.dao.get(
+      `
+      SELECT
+          id,
+          senhaTentativa,
+          senhaBloqueio,
+          senhaTotDesbloqueio
+      FROM
+          Participante
+      WHERE
+          id = ?`,
+      [id]
+    );
+  }
 }
 
 module.exports = ParticipanteDao;

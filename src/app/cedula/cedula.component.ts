@@ -7,6 +7,7 @@ import { Voto } from './../modelo/entidade/voto';
 import { CedulaService } from './cedula.service';
 import { Opcao } from './../modelo/entidade/opcao';
 import { MensagemService } from '../comum/servico/mensagem/mensagem.service';
+import { situacaoNome } from '../comum/ferramenta/ferramenta-sistema';
 
 @Component({
   selector: 'app-cedula',
@@ -45,14 +46,17 @@ export class CedulaComponent implements OnInit {
         }
         const inicio = new Date(this.entidade.votacaoLista[0].inicio.replace(/-/g, '/'));
         const termino = new Date(this.entidade.votacaoLista[0].termino.replace(/-/g, '/'));
-        if (agora.getTime() < inicio.getTime()) {
+        if (this.entidade.votacaoLista[0].situacao === 'F') {
           this.mensagem.erro(`Votação (${this.entidade.votacaoLista[0].nome}) ainda não foi iniciada. Início previsto para (${inicio})`);
           this.router.navigate(['../', this.identificacao]);
-        } else if (agora.getTime() > termino.getTime()) {
+        } else if (this.entidade.votacaoLista[0].situacao === 'X') {
           this.mensagem.erro(`Votação (${this.entidade.votacaoLista[0].nome}) encerrada em (${termino})`);
           this.router.navigate(['../', this.identificacao]);
         } else if (this.entidade && this.entidade.votacaoLista[0] && this.entidade.votacaoLista[0].votou) {
           this.mensagem.erro(`O seu voto já foi registrado para esta votação!`);
+          this.router.navigate(['../', this.identificacao]);
+        } else if (this.entidade && this.entidade.votacaoLista[0] && this.entidade.votacaoLista[0].senhaBloqueio) {
+          this.mensagem.erro(`A senha para esta votação está bloqueada!`);
           this.router.navigate(['../', this.identificacao]);
         } else {
           for (const pauta of this.entidade.votacaoLista[0].pautaLista) {
@@ -65,26 +69,15 @@ export class CedulaComponent implements OnInit {
     });
   }
 
-  situacao(inicio, termino): { sigla: string, nome: string } {
-    let agora = new Date();
-    inicio = new Date(inicio.replace(/-/g, '/'));
-    termino = new Date(termino.replace(/-/g, '/'));
-    if (agora.getTime() >= inicio.getTime() && agora.getTime() <= termino.getTime()) {
-      return { sigla: 'E', nome: 'Em andamento' };
-    } else if (agora.getTime() < inicio.getTime()) {
-      return { sigla: 'F', nome: 'Futuro' };
-    } else if (agora.getTime() > termino.getTime()) {
-      return { sigla: 'X', nome: 'Encerrado' };
-    } else {
-      return { sigla: '', nome: '' };
-    }
+  situacaoNome(sigla): string {
+    return situacaoNome(sigla);
   }
 
   filtrarVotacao(votacao: any, params): boolean {
-    return (!params[2] || params[2].trim().length === 0 ||
-      votacao.nome.trim().toLowerCase().indexOf(params[2].toLowerCase()) >= 0) &&
+    return (!params[1] || params[1].trim().length === 0 ||
+      votacao.nome.trim().toLowerCase().indexOf(params[1].toLowerCase()) >= 0) &&
       (!params[0] || params[0].trim().length === 0 ||
-        params[1](votacao.inicio, votacao.termino).sigla === params[0]);
+        votacao.situacao === params[0]);
   }
 
   async confirmar(): Promise<any> {

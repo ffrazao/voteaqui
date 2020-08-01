@@ -1,3 +1,4 @@
+import { FormSairGuard } from './form-sair.guard';
 import { PipeModule } from './../../comum/pipe/pipe.module';
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -17,6 +18,9 @@ import { ReactiveFormsModule, FormsModule } from '@angular/forms';
     ReactiveFormsModule,
     FormsModule,
     PipeModule,
+  ],
+  providers: [
+    FormSairGuard
   ]
 })
 export class FormModule { }

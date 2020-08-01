@@ -54,7 +54,20 @@ class VotacaoDao {
   }
 
   getById(id) {
-    return this.dao.get(`SELECT *, DATE_FORMAT(inicio, '%Y-%m-%dT%H:%i') as inicioF, DATE_FORMAT(termino, '%Y-%m-%dT%H:%i') as terminoF FROM ${this.nomeTabela} WHERE id = ?`, [id]);
+    return this.dao.get(
+      `SELECT *,
+              DATE_FORMAT(inicio, '%Y-%m-%dT%H:%i') as inicioF,
+              DATE_FORMAT(termino, '%Y-%m-%dT%H:%i') as terminoF,
+              IF(inicio <= CONVERT_TZ(NOW(), @@SESSION .time_zone, '-3:00')
+                    AND termino >= CONVERT_TZ(NOW(), @@SESSION .time_zone, '-3:00'),
+                'E',
+                IF(inicio > CONVERT_TZ(NOW(), @@SESSION .time_zone, '-3:00'),
+                    'F',
+                    IF(termino < CONVERT_TZ(NOW(), @@SESSION .time_zone, '-3:00'),
+                        'X',
+                        NULL))) AS situacao
+      FROM ${this.nomeTabela}
+      WHERE id = ?`, [id]);
   }
 
   getAll() {
@@ -76,9 +89,18 @@ class VotacaoDao {
                 v.descricao,
                 v.inicio,
                 v.termino,
+                IF(v.inicio <= CONVERT_TZ(NOW(), @@SESSION .time_zone, '-3:00')
+                    AND v.termino >= CONVERT_TZ(NOW(), @@SESSION .time_zone, '-3:00'),
+                'E',
+                IF(v.inicio > CONVERT_TZ(NOW(), @@SESSION .time_zone, '-3:00'),
+                    'F',
+                    IF(v.termino < CONVERT_TZ(NOW(), @@SESSION .time_zone, '-3:00'),
+                        'X',
+                        NULL))) AS situacao,
                 p.senha,
+                p.senhaBloqueio,
                 p.votou
-      FROM      Votacao v
+      FROM      ${this.nomeTabela} v
        JOIN     Participante p
        ON       p.votacaoid = v.id
        WHERE    v.inicio BETWEEN DATE_ADD(CONVERT_TZ(NOW(), @@session.time_zone, '-3:00'), INTERVAL -1 MONTH) AND DATE_ADD(CONVERT_TZ(NOW(), @@session.time_zone, '-3:00'), INTERVAL +1 MONTH)
@@ -88,12 +110,12 @@ class VotacaoDao {
     );
   }
 
-  getResultado(votacaoid) {
+  getResultado(id) {
     return this.dao.get(
       `SELECT v.resultado, CONVERT_TZ(NOW(), @@session.time_zone, '-3:00') > v.termino as encerrado
-       FROM Votacao v
+       FROM ${this.nomeTabela} v
        WHERE  id = ?`,
-      [votacaoid]
+      [id]
     );
   }
 
@@ -106,12 +128,12 @@ class VotacaoDao {
     );
   }
 
-  getTotalVotantes(votacaoId) {
+  getTotalVotantes(id) {
     return this.dao.get(`
     SELECT COUNT(*) AS total
     FROM   Participante
     WHERE  votacaoId = ?
-    AND    votou = 1`, [votacaoId]);
+    AND    votou = 1`, [id]);
   }
 
   updateSenha(id, senhaNova) {
@@ -133,11 +155,11 @@ class VotacaoDao {
     );
   }
 
-  senhaEmCarencia(votacaoId) {
+  senhaEmCarencia(id) {
     return this.dao.get(`
     SELECT IFNULL(senhaBloqueio > CONVERT_TZ(NOW(), @@SESSION .time_zone, '-3:00'), 0) AS bloqueado
     FROM ${this.nomeTabela}
-    WHERE id = ?`, [votacaoId]);
+    WHERE id = ?`, [id]);
   }
 
   updateDesbloqueiaSenha(id)  {

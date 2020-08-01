@@ -1,3 +1,4 @@
+<br>
 <div *ngIf="etapa===0 && entidade">
 
   <p>Olá <b>{{entidade.participante.nome}}</b>.</p>
@@ -24,7 +25,7 @@
 
   <!-- <h2>{{entidade.votacaoLista[0].descricao}}</h2> -->
 
-  <div class="table-responsive">
+  <div class="table-responsive" style="background-color: white;">
     <table class="table table-striped table-hover">
       <ng-template ngFor let-pauta [ngForOf]="entidade.votacaoLista[0].pautaLista" let-i="index">
         <thead class="thead-dark">

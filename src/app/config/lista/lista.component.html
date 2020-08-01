@@ -1,6 +1,6 @@
 <h2 class="text-info">Listagem de Votações</h2>
 
-<div class="table-responsive">
+<div class="table-responsive" style="background-color: white;">
   <table class="table table-striped table-hover" style="width: 100%;" *ngIf="entidade?.length">
     <thead class="thead-dark">
       <tr>
@@ -20,7 +20,10 @@
           {{i+1}}.
         </td>
         <td [routerLink]="[registro.id]">
-          {{registro.codigo}}
+          {{registro.codigo}}<br>
+          <span class="badge badge-info" *ngIf="registro.situacao === 'X'">{{situacaoNome(registro.situacao)}}</span>
+          <span class="badge badge-success" *ngIf="registro.situacao === 'E'">{{situacaoNome(registro.situacao)}}</span>
+          <span class="badge badge-secondary" *ngIf="registro.situacao === 'F'">{{situacaoNome(registro.situacao)}}</span>
         </td>
         <td [routerLink]="[registro.id]">
           {{registro.nome}}
