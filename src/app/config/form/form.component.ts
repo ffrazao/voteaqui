@@ -257,6 +257,7 @@ export class FormComponent implements OnInit {
       this.servico.create(this.frm.value as Votacao).subscribe((r) => {
         console.log(r);
         this.mensagem.sucesso('Sucesso. As informações foram salvas!');
+        this.frm.markAsPristine();
         this._router.navigate(['/config']);
       }, (err) => {
         console.log(err);
@@ -270,6 +271,7 @@ export class FormComponent implements OnInit {
       this.servico.update(this.frm.value as Votacao, senha).subscribe((r) => {
         console.log(r);
         this.mensagem.sucesso('Sucesso. As informações foram salvas!');
+        this.frm.markAsPristine();
         this._router.navigate(['/config']);
       }, (err) => {
         console.log(err);

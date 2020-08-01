@@ -11,7 +11,7 @@ const usuarioBo = new UsuarioBo(conexaoDbDao);
 const VotacaoBo = require('./bo/votacao.bo');
 const votacaoBo = new VotacaoBo(conexaoDbDao, conexaoEmail);
 const ParticipanteBo = require('./bo/participante.bo');
-const participanteBo = new ParticipanteBo(conexaoDbDao, conexaoEmail, votacaoBo);
+const participanteBo = new ParticipanteBo(conexaoDbDao, conexaoEmail);
 const VotoBo = require('./bo/voto.bo');
 const votoBo = new VotoBo(conexaoDbDao);
 

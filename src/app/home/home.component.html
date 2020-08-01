@@ -1,12 +1,16 @@
 <h1 class="mt-5 text-info">Identificação de Participante</h1>
 
-<p>Digite a sua identificação e clique no botão "Pesquisar"</p>
+<p>Informe a sua identificação e clique no botão "Pesquisar"</p>
 
-<div class="form-group">
-  <mat-form-field appearance="fill">
-    <mat-label>Identificacao</mat-label>
-    <input matInput name="identificacao" [(ngModel)]="identificacao">
-  </mat-form-field>
-</div>
+<form [formGroup]="frm">
+  <div class="form-group">
+    <mat-form-field appearance="fill">
+      <mat-label>Identificacao</mat-label>
+      <input matInput formControlName="identificacao">
+      <mat-error *ngIf="frm.controls.identificacao.hasError('required')">Campo obrigatório!</mat-error>
+      <mat-error *ngIf="frm.controls.identificacao.hasError('pattern')">Informe somente números sem zero à esquerda</mat-error>
+    </mat-form-field>
+  </div>
+</form>
 
-<button mat-button class="btn btn-primary" [routerLink]="['../', identificacao]">Pesquisar</button>
+<button mat-button class="btn btn-primary" (click)="pesquisar()">Pesquisar</button>

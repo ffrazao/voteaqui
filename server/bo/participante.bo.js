@@ -1,11 +1,12 @@
 const ParticipanteDao = require(`../dao/participante.dao`);
+const VotacaoDao = require(`../dao/votacao.dao`);
 
 class ParticipanteBo {
-  constructor(dao, transporterEmail, votacaoBo) {
+  constructor(dao, transporterEmail) {
     this.dbDao = dao;
     this.dao = new ParticipanteDao(this.dbDao);
+    this.votacaoDao = new VotacaoDao(this.dbDao);
     this.transporterEmail = transporterEmail;
-    this.votacaoBo = votacaoBo;
   }
 
   novo(registro) {
@@ -46,7 +47,6 @@ class ParticipanteBo {
     var registro = await this.dao.getById(id);
     if (registro) {
       if (escondeSenha) {
-        console.log('escondendo senha de participante');
         delete registro.senha;
       }
       result = registro;
@@ -98,7 +98,8 @@ class ParticipanteBo {
   async getByVotacaoId(id) {
     var result = await this.dao.getByVotacaoId(id);
     for (var registro of result) {
-      await delete registro.votacaoId;
+      delete registro.senha;
+      delete registro.votacaoId;
     }
     return result;
   }
@@ -116,20 +117,17 @@ class ParticipanteBo {
 
     // enviar email
     var participante = await this.dao.getById(participanteId);
+    var votacao = await this.votacaoDao.getById(participante.votacaoId);
     if (participante.email) {
-      var votacao = await this.votacaoBo.restore(participante.votacaoId);
-
       var msg = `<p>Olá ${participante.nome}!,</p>
       <p></p>
       <p>Obrigado por ter participado da votação <b><u>${votacao.nome}</u></b></p>`;
-
       var mailOptions = {
         from: `voteaquidf@gmail.com`,
         to: `${participante.email}`,
         subject: `Comprovante de Votação`,
         html: msg,
       };
-
       this.transporterEmail.sendMail(mailOptions, function (error, info) {
         if (error) {
           console.log(`Erro ao enviar: `, error);
@@ -137,6 +135,9 @@ class ParticipanteBo {
           console.log(`Email sent: ` + info.response);
         }
       });
+    }
+    if (participante.telefone) {
+
     }
 
     return result;
