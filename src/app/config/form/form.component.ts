@@ -362,7 +362,7 @@ export class FormComponent implements OnInit {
       }).subscribe(result => {
         if (meio === 'email') {
           this.mensagem.sucesso('E-mails enviados!!!');
-        } else {
+        } else if (meio === 'whatsapp') {
           for (const r of result) {
             new Promise((resolve, reject) => {
               // setTimeout(() => {
@@ -372,6 +372,8 @@ export class FormComponent implements OnInit {
             }).then(enviou => console.log(enviou));
           }
           this.mensagem.sucesso('WhatsApp enviados!!!');
+        } else if (meio === 'sms') {
+          this.mensagem.sucesso('SMSs enviados!!!');
         }
       }, e => {
         this.mensagem.erro('Erro no envio das cédulas!!!');

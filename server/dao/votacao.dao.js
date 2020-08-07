@@ -97,7 +97,6 @@ class VotacaoDao {
                     IF(v.termino < CONVERT_TZ(NOW(), @@SESSION .time_zone, '-3:00'),
                         'X',
                         NULL))) AS situacao,
-                p.senha,
                 p.senhaBloqueio,
                 p.votou
       FROM      ${this.nomeTabela} v

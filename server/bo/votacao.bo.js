@@ -1,3 +1,5 @@
+var request = require('request');
+
 const VotacaoDao = require('../dao/votacao.dao');
 const PautaBo = require('./pauta.bo');
 const ParticipanteBo = require('./participante.bo');
@@ -151,11 +153,11 @@ class VotacaoBo {
           inicio: r.inicio,
           termino: r.termino,
           situacao: r.situacao,
-          senha: r.senha,
           senhaBloqueio: r.senhaBloqueio,
           votou: r.votou,
         };
         votacao.pautaLista = await this.pautaBo.getByVotacaoId(r.id);
+        delete votacao.senha;
         votacaoLista.push(votacao);
       }
       result = {
@@ -300,7 +302,7 @@ class VotacaoBo {
 
   // API Votacao RESTORE
   async validaSenha(id, senha) {
-    console.log(`validaSenha(${id}, ${senha})`)
+    console.log(`validaSenha(${id}, ${senha})`);
     var registro = await this.dao.getById(id);
     var result = false;
     if (!registro) {
@@ -314,15 +316,23 @@ class VotacaoBo {
       console.log('errou', registro.senhaTentativa);
     }
     if (registro.senhaTentativa >= 3) {
-      var bloqueio = new Date(new Date().getTime() + (30 * 60000));
+      var bloqueio = new Date(new Date().getTime() + 30 * 60000);
       registro.senhaBloqueio = bloqueio;
-      console.log('bloqueando senha ', registro.senhaTentativa, registro.senhaBloqueio);
+      console.log(
+        'bloqueando senha ',
+        registro.senhaTentativa,
+        registro.senhaBloqueio
+      );
     }
     this.dao.updateSenhaBloqueio(id, registro);
     var bloqueadoPorTempo = await this.dao.senhaEmCarencia(id);
     console.log(`bloqueadoPorTempo`, JSON.stringify(bloqueadoPorTempo));
     if (bloqueadoPorTempo.bloqueado) {
-      console.log('Dentro da carencia do bloqueio ', registro.senhaTentativa, registro.senhaBloqueio);
+      console.log(
+        'Dentro da carencia do bloqueio ',
+        registro.senhaTentativa,
+        registro.senhaBloqueio
+      );
       throw new Error('Senha BLOQUEADA, aguardando tempo de desbloqueio');
     }
     return result;
@@ -339,35 +349,39 @@ class VotacaoBo {
     for (var id of mensagem.participanteIdLista) {
       var participante = await this.participanteBo.restore(id, false);
 
-      console.log(`enviando ${mensagem.meio} para ${participante.nome}`);
+      var link = `${mensagem.API_URL}/${participante.identificacao}/${mensagem.votacao.id}`;
+      var participanteNome = participante.nome;
+      var participanteSenha = participante.senha;
+      var participanteTelefone = participante.telefone;
+      var participanteEmail = participante.email;
+      var votacaoNome = mensagem.votacao.nome;
+
+      console.log(`enviando ${mensagem.meio} para ${participanteNome}`);
 
       if (mensagem.meio === 'whatsapp') {
-        var msg =
-`Olá ${participante.nome.substr(0, 12)}!,
+        var msg = `Olá ${participanteNome.substr(0, 12)}!,
 
-Votação *_${mensagem.votacao.nome}_*
-Sua senha *${participante.senha}*
-Link ${mensagem.API_URL}/${participante.identificacao}/${mensagem.votacao.id}
+Votação *_${votacaoNome}_*
+Sua senha *${participanteSenha}*
+Link ${link}
 
 ATENÇÃO: *_memorize esta senha_*, ela será solicitada durante o processo de votação`;
 
         resultado.push({
-          url: `https://api.whatsapp.com/send?phone=${
-            participante.telefone
-          }&text=${encodeURI(msg)}&preview_url=true`,
+          url: `https://api.whatsapp.com/send?phone=${participanteTelefone}&text=${encodeURI(msg)}&preview_url=true`,
         });
       } else if (mensagem.meio === 'email') {
-        var msg = `<p>Olá ${participante.nome}!,</p>
+        var msg = `<p>Olá ${participanteNome}!,</p>
         <p></p>
-        <p>Para a votação <b><u>${mensagem.votacao.nome}</u></b></p>
-        <p>Encaminhamos a sua senha <h1><b>${participante.senha}</b></h1></p>
-        <p>Para iniciar clique no link <a href='${mensagem.API_URL}/${participante.identificacao}/${mensagem.votacao.id}'>Vote Aqui</a></p>
+        <p>Para a votação <b><u>${votacaoNome}</u></b></p>
+        <p>Encaminhamos a sua senha <h1><b>${participanteSenha}</b></h1></p>
+        <p>Para iniciar clique no link <a href='${link}'>Vote Aqui</a></p>
         <p></p>
         <p>ATENÇÃO: memorize esta senha, ela será solicitada durante o processo de votação</p>`;
 
         var mailOptions = {
           from: `voteaquidf@gmail.com`,
-          to: `${participante.email}`,
+          to: `${participanteEmail}`,
           subject: `Cédula de Votação`,
           html: msg,
         };
@@ -379,6 +393,34 @@ ATENÇÃO: *_memorize esta senha_*, ela será solicitada durante o processo de v
           } else {
             console.log(`Email sent: ` + info.response);
           }
+        });
+      } else if (mensagem.meio === 'sms') {
+        var msg =
+`Link: ${link}
+Senha: ${participanteSenha}
+Nome: ${participanteNome.substr(0, 15)}!,
+Votação: ${votacaoNome.substr(0, 15)}`.substr(0, 159);
+
+        request({
+          uri: 'http://app.smsconecta.com.br/SendAPI/Send.aspx',
+          qs: {
+            usr: 'ffrazao@gmail.com',
+            pwd: 'frazaosms2020',
+            sender: 'VoteAqui',
+            number: participanteTelefone,
+            msg: msg,
+          },
+          function(error, response, body) {
+            console.log(`enviando SMS ... ${participanteNome}`);
+            if (!error && response.statusCode === 200) {
+              console.log(body);
+              res.json(body);
+            } else {
+              console.log(`Erro envio SMS: ${JSON.stringify(body)}`);
+              res.json(error);
+              throw new Error(`Erro envio SMS: ${JSON.stringify(body)}`);
+            }
+          },
         });
       } else {
 
