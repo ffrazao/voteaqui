@@ -13,12 +13,14 @@ import { CedulaService } from './cedula.service';
 import { CedulaResolver } from './cedula.resolver';
 import { PipeModule } from '../comum/pipe/pipe.module';
 import { ConfirmarVotoComponent } from './confirmar-voto/confirmar-voto.component';
+import { MensagemParticipanteComponent } from './mensagem-participante/mensagem-participante.component';
 
 
 @NgModule({
   declarations: [
     CedulaComponent,
     ConfirmarVotoComponent,
+    MensagemParticipanteComponent,
     AlterarSenhaComponent,
   ],
   imports: [

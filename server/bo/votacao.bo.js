@@ -1,9 +1,11 @@
-var request = require('request');
+// var http = require('http');
+var http = require('http');
 
 const VotacaoDao = require('../dao/votacao.dao');
 const PautaBo = require('./pauta.bo');
 const ParticipanteBo = require('./participante.bo');
 const VotoBo = require('./voto.bo');
+const MensagemDao = require('../dao/mensagem.dao');
 require('../util/funcoes');
 const bcrypt = require('bcrypt');
 
@@ -15,6 +17,7 @@ class VotacaoBo {
     this.participanteBo = new ParticipanteBo(this.dbDao);
     this.votoBo = new VotoBo(this.dbDao);
     this.transporterEmail = transporterEmail;
+    this.mensagemDao = new MensagemDao(this.dbDao);
   }
 
   novo(registro) {
@@ -221,7 +224,7 @@ class VotacaoBo {
               );
               console.log(
                 `p.opcaoLista ===> ${JSON.stringify(p.opcaoLista)} leng = ${
-                  p.opcaoLista
+                p.opcaoLista
                 }`
               );
               if (p.nulo) {
@@ -302,7 +305,7 @@ class VotacaoBo {
 
   // API Votacao RESTORE
   async validaSenha(id, senha) {
-    console.log(`validaSenha(${id}, ${senha})`);
+    // console.log(`validaSenha(${id}, ${senha})`);
     var registro = await this.dao.getById(id);
     var result = false;
     if (!registro) {
@@ -341,11 +344,12 @@ class VotacaoBo {
     this.dao.updateDesbloqueiaSenha(votacaoId);
   }
 
-  async enviarCedula(mensagem) {
+  async enviarMensagem(mensagem) {
     if (!(await this.validaSenha(mensagem.votacao.id, mensagem.senha))) {
       throw new Error('Senha inválida!');
     }
     var resultado = [];
+    var mensagemDaoLocal = this.mensagemDao;
     for (var id of mensagem.participanteIdLista) {
       var participante = await this.participanteBo.restore(id, false);
 
@@ -355,11 +359,12 @@ class VotacaoBo {
       var participanteTelefone = participante.telefone;
       var participanteEmail = participante.email;
       var votacaoNome = mensagem.votacao.nome;
+      var mensagemEnviada = mensagem.msg;
 
       console.log(`enviando ${mensagem.meio} para ${participanteNome}`);
 
-      if (mensagem.meio === 'whatsapp') {
-        var msg = `Olá ${participanteNome.substr(0, 12)}!,
+      if (mensagem.meio === 'whatsapp' && participanteTelefone && participanteTelefone.length) {
+        var msg = mensagemEnviada ? mensagemEnviada : `Olá ${participanteNome.substr(0, 12)}!,
 
 Votação *_${votacaoNome}_*
 Sua senha *${participanteSenha}*
@@ -370,8 +375,13 @@ ATENÇÃO: *_memorize esta senha_*, ela será solicitada durante o processo de v
         resultado.push({
           url: `https://api.whatsapp.com/send?phone=${participanteTelefone}&text=${encodeURI(msg)}&preview_url=true`,
         });
-      } else if (mensagem.meio === 'email') {
-        var msg = `<p>Olá ${participanteNome}!,</p>
+        mensagemDaoLocal.create(mensagem.meio, JSON.stringify(resultado[resultado.length - 1]))
+          .then((logMsg) => {
+            console.log(`Mensagem ${logMsg.meio} id(${logMsg.id})`);
+          })
+          .catch(err => console.error(`Erro log mensagem (${JSON.stringify(err)})`));
+      } else if (mensagem.meio === 'email' && participanteEmail && participanteEmail.length) {
+        var msg = mensagemEnviada ? mensagemEnviada : `<p>Olá ${participanteNome}!,</p>
         <p></p>
         <p>Para a votação <b><u>${votacaoNome}</u></b></p>
         <p>Encaminhamos a sua senha <h1><b>${participanteSenha}</b></h1></p>
@@ -382,46 +392,67 @@ ATENÇÃO: *_memorize esta senha_*, ela será solicitada durante o processo de v
         var mailOptions = {
           from: `voteaquidf@gmail.com`,
           to: `${participanteEmail}`,
-          subject: `Cédula de Votação`,
+          subject: `Votação: ${votacaoNome}`,
           html: msg,
         };
 
-        this.transporterEmail.sendMail(mailOptions, function (error, info) {
-          if (error) {
-            console.log(`Erro ao enviar: `, error);
-            // break;
-          } else {
-            console.log(`Email sent: ` + info.response);
+        new Promise(async (resolve, reject) => {
+          try {
+            var logMsg = await mensagemDaoLocal.create(mensagem.meio, JSON.stringify(mailOptions));
+            console.log(`Mensagem ${mensagem.meio} id(${logMsg.id})`);
+          } catch (err) {
+            console.log(`Msg log erro ${err}`);
+            reject(err);
+            return;
           }
-        });
-      } else if (mensagem.meio === 'sms') {
-        var msg =
-`Link: ${link}
-Senha: ${participanteSenha}
-Nome: ${participanteNome.substr(0, 15)}!,
-Votação: ${votacaoNome.substr(0, 15)}`.substr(0, 159);
 
-        request({
-          uri: 'http://app.smsconecta.com.br/SendAPI/Send.aspx',
-          qs: {
-            usr: 'ffrazao@gmail.com',
-            pwd: 'frazaosms2020',
-            sender: 'VoteAqui',
-            number: participanteTelefone,
-            msg: msg,
-          },
-          function(error, response, body) {
-            console.log(`enviando SMS ... ${participanteNome}`);
-            if (!error && response.statusCode === 200) {
-              console.log(body);
-              res.json(body);
+          this.transporterEmail.sendMail(mailOptions, function (error, info) {
+            if (error) {
+              console.log(`Erro ao enviar: `, error);
             } else {
-              console.log(`Erro envio SMS: ${JSON.stringify(body)}`);
-              res.json(error);
-              throw new Error(`Erro envio SMS: ${JSON.stringify(body)}`);
+              console.log(`Email sent: ` + info.response);
+              mensagemDaoLocal.update(logMsg.id, JSON.stringify(info)).then(r => console.log(`Fim mensagem log (${logMsg.id})`));
+              resolve(logMsg.id);
             }
-          },
-        });
+          });
+        }).then(_ => console.log(`Fim envio...${_}`));
+
+      } else if (mensagem.meio === 'sms' && participanteTelefone && participanteTelefone.length) {
+        var msg = mensagemEnviada ? mensagemEnviada :
+          `${votacaoNome.substr(0, 15)}
+${participanteNome.substr(0, 15)},
+${link}
+Senha: ${participanteSenha}
+`.substr(0, 159);
+
+        var smsOptions = {
+          host: 'app.smsconecta.com.br',
+          path: encodeURI(`/SendAPI/Send.aspx?usr=ffrazao@gmail.com&pwd=frazaosms2020&sender=VoteAqui&number=${participanteTelefone}&msg=${msg}`),
+        };
+
+        new Promise(async (resolve, reject) => {
+          try {
+            var logMsg = await mensagemDaoLocal.create(mensagem.meio, JSON.stringify(smsOptions));
+            console.log(`Mensagem ${mensagem.meio} id(${logMsg.id})`);
+          } catch (err) {
+            console.log(`Msg log erro ${err}`);
+            reject(err);
+            return;
+          }
+
+          var req = http.request(smsOptions, function (response) {
+            var str = ''
+            response.on('data', function (chunk) {
+              str += chunk;
+            });
+            response.on('end', function () {
+              console.log(`Sms sent... [${str}]`);
+              mensagemDaoLocal.update(logMsg.id, JSON.stringify(str)).then(r => console.log(`Fim mensagem log (${logMsg.id})`));
+              resolve(logMsg.id);
+            });
+          });
+          req.end();
+        }).then(_ => console.log(`Fim envio...${_}`));
       } else {
 
       }

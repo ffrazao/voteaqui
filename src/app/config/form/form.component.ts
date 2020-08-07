@@ -1,4 +1,3 @@
-import { ConfirmarVotoComponent } from './../../cedula/confirmar-voto/confirmar-voto.component';
 import { Component, OnInit } from '@angular/core';
 import { FormGroup, FormBuilder, Validators, FormArray } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -11,6 +10,8 @@ import { Votacao } from './../../modelo/entidade/votacao';
 import { AlterarSenhaComponent } from './../../cedula/alterar-senha/alterar-senha.component';
 import { MensagemService } from './../../comum/servico/mensagem/mensagem.service';
 import { environment } from './../../../environments/environment';
+import { ConfirmarVotoComponent } from './../../cedula/confirmar-voto/confirmar-voto.component';
+import { MensagemParticipanteComponent } from './../../cedula/mensagem-participante/mensagem-participante.component';
 
 @Component({
   selector: 'app-form',
@@ -133,7 +134,7 @@ export class FormComponent implements OnInit {
   private criarParticipante(valor: Participante): FormGroup {
     const result = this.fb.group({
       id: [valor.id, []],
-      identificacao: [valor.identificacao, [Validators.required, Validators.pattern(/^[1-9]+[\d]*$/)]],
+      identificacao: [valor.identificacao, [Validators.required, Validators.pattern(/^[1-9]+[\d|X]*$/)]],
       nome: [valor.nome, [Validators.required]],
       telefone: [valor.telefone, [Validators.pattern(/^[1-9]+[\d]*$/)]],
       email: [valor.email, [Validators.email]],
@@ -220,15 +221,19 @@ export class FormComponent implements OnInit {
           for (let p = 0; p < colunas.length; p++) {
             if (colunas[p] === 'identificacao') {
               identificacao = p;
+              continue;
             }
             if (colunas[p] === 'nome') {
               nome = p;
+              continue;
             }
             if (colunas[p] === 'telefone') {
               telefone = p;
+              continue;
             }
             if (colunas[p] === 'email') {
               email = p;
+              continue;
             }
           }
         } else {
@@ -334,13 +339,14 @@ export class FormComponent implements OnInit {
     }
   }
 
-  async enviarCedula(meio: string): Promise<any> {
+  async enviarMensagem(meio: string): Promise<any> {
     const votacao = this.frm.value;
     const lista = this.frm.get('participanteLista').value;
     const tempo = 3 * 1000;
     const participanteIdLista = [];
 
     if (lista && lista.length && confirm(`Confirma o envio do link, a todos os participantes selecionados, por ${meio}?`)) {
+      let msgEnvio: string = await this.mensagem.confirmeModelo('Digite a mensagem ou deixe em branco para enviar a cédula', MensagemParticipanteComponent);
       const senha = await this.mensagem.confirmeModelo('Digite a senha de acesso', ConfirmarVotoComponent);
       if (!senha) {
         return;
@@ -350,7 +356,7 @@ export class FormComponent implements OnInit {
           participanteIdLista.push(v.id);
         }
       });
-      this.servico.enviarCedula({
+      this.servico.enviarMensagem({
         meio,
         senha,
         votacao: {
@@ -358,7 +364,8 @@ export class FormComponent implements OnInit {
           nome: votacao.nome
         },
         API_URL: environment.API_URL,
-        participanteIdLista
+        participanteIdLista,
+        msg: msgEnvio
       }).subscribe(result => {
         if (meio === 'email') {
           this.mensagem.sucesso('E-mails enviados!!!');

@@ -6,6 +6,7 @@ const PautaDao = require('./dao/pauta.dao');
 const OpcaoDao = require('./dao/opcao.dao');
 const ParticipanteDao = require('./dao/participante.dao');
 const VotoDao = require('./dao/voto.dao');
+const MensagemDao = require('./dao/mensagem.dao');
 
 const dao = new Dao();
 
@@ -17,12 +18,13 @@ function iniciarBancoDeDados() {
   const opcaoDao = new OpcaoDao(dao);
   const participanteDao = new ParticipanteDao(dao);
   const votoDao = new VotoDao(dao);
+  const mensagemDao = new MensagemDao(dao);
 
   usuarioDao.createTable()
     .then(() => console.log(`Tabela Usuário verificada!`))
     .catch((err) => {
-    console.log(`Error: ${JSON.stringify(err)}`);
-  });
+      console.log(`Error: ${JSON.stringify(err)}`);
+    });
   votacaoDao
     .createTable()
     .then(() => {
@@ -113,6 +115,12 @@ function iniciarBancoDeDados() {
   votoDao
     .createTable()
     .then(() => console.log(`Tabela Voto verificada!`))
+    .catch((err) => {
+      console.log(`Error: ${JSON.stringify(err)}`);
+    });
+  mensagemDao
+    .createTable()
+    .then(() => console.log(`Tabela Mensagem verificada!`))
     .catch((err) => {
       console.log(`Error: ${JSON.stringify(err)}`);
     });

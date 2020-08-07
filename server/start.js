@@ -313,7 +313,7 @@ app.put(
 app.post('/api/votacao/cedula', async function (req, res) {
   var registro = req.body;
   try {
-    var result = await votacaoBo.enviarCedula(registro);
+    var result = await votacaoBo.enviarMensagem(registro);
     console.log('cedulas', result);
     res.write(JSON.stringify(result));
   } catch (e) {

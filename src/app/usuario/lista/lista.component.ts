@@ -1,10 +1,10 @@
-import { ConfirmarVotoComponent } from '../../cedula/confirmar-voto/confirmar-voto.component';
 import { MensagemService } from '../../comum/servico/mensagem/mensagem.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Component, OnInit } from '@angular/core';
 
 import { Usuario } from '../../modelo/entidade/usuario';
 import { UsuarioService } from '../usuario.service';
+import { ConfirmarVotoComponent } from '../../cedula/confirmar-voto/confirmar-voto.component';
 
 @Component({
   selector: 'app-lista',

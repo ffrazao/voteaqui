@@ -47,4 +47,4 @@ Thumbs.db
 
 # persolalizado
 /server/db.sqlite3
-
+**/*.bak

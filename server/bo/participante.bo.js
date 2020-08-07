@@ -157,7 +157,7 @@ class ParticipanteBo {
 
   // API Votacao RESTORE
   async validaSenha(id, senha) {
-    console.log(`validaSenha(${id}, ${senha})`)
+    // console.log(`validaSenha(${id}, ${senha})`)
     var registro = await this.dao.getById(id);
     var result = false;
     if (!registro) {

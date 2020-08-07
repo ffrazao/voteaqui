@@ -256,18 +256,25 @@
       </tbody>
     </table>
   </div>
-  <button type="button" mat-button class="btn btn-secondary btn-sm btn-block" (click)="pautaIncluir(frm)">Incluir
-    Pauta</button>
+  <button type="button" mat-button class="btn btn-secondary btn-sm btn-block" (click)="pautaIncluir(frm)">
+    Incluir Pauta
+  </button>
 
   <h2 class="mt-5 text-info">Participantes</h2>
 
   <input type="file" class="btn btn-secondary btn-sm" (change)="lerArquivo($event)">
-  <button type="button" mat-button class="btn btn-secondary btn-sm" (click)="enviarCedula('whatsapp')"
-    *ngIf="totalSelecao()">Enviar Link por WhatsApp<img src="assets/whatsapp.png" style="width: 40px; height: 30px;"></button>
-  <button type="button" mat-button class="btn btn-secondary btn-sm" (click)="enviarCedula('email')"
-    *ngIf="totalSelecao()">Enviar Link por E-mail<img src="assets/email.png" style="width: 20px; height: 15px;"></button>
-  <button type="button" mat-button class="btn btn-secondary btn-sm" (click)="enviarCedula('sms')"
-    *ngIf="totalSelecao()">Enviar Link por SMS<img src="assets/sms.jpg" style="width: 20px; height: 15px;"></button>
+  <button type="button" mat-button class="btn btn-secondary btn-sm" (click)="enviarMensagem('whatsapp')"
+    *ngIf="totalSelecao()">
+    Enviar Link por WhatsApp <img src="assets/whatsapp.png" style="width: 40px; height: 30px;">
+  </button>
+  <button type="button" mat-button class="btn btn-secondary btn-sm" (click)="enviarMensagem('email')"
+    *ngIf="totalSelecao()">
+    Enviar Link por E-mail <img src="assets/email.png" style="width: 20px; height: 15px;">
+  </button>
+  <button type="button" mat-button class="btn btn-secondary btn-sm" (click)="enviarMensagem('sms')"
+    *ngIf="totalSelecao()">
+    Enviar Link por SMS <img src="assets/sms.jpg" style="width: 20px; height: 15px;">
+  </button>
 
   <div class="d-sm-flex justify-content-between border border-secondary">
     <div style="font-size:70%">
@@ -334,52 +341,75 @@
               [name]="'seleciona' + i"></mat-checkbox>
           </td>
           <td>
-            <label *ngIf="!participante['editando']">{{participante.value.identificacao}}</label>
+            <label *ngIf="!participante['editando']">
+              {{participante.value.identificacao}}
+              <div class="alert alert-danger" *ngIf="participante.controls.identificacao.hasError('required')">
+                Erro: Campo obrigatório!
+              </div>
+              <div class="alert alert-danger" *ngIf="participante.controls.identificacao.hasError('pattern')">
+                Erro: Somente números e sem zeros no início!
+              </div>
+            </label>
             <div class="form-group" *ngIf="participante['editando']">
               <mat-form-field appearance="fill">
                 <mat-label>Identificação</mat-label>
                 <input matInput formControlName="identificacao">
                 <mat-error *ngIf="participante.controls.identificacao.hasError('required')">
-                  Campo obrigatório!
+                  Erro: Campo obrigatório!
                 </mat-error>
                 <mat-error *ngIf="participante.controls.identificacao.hasError('pattern')">
-                  Somente números e sem zeros no início!
+                  Erro: Somente números e sem zeros no início!
                 </mat-error>
               </mat-form-field>
             </div>
           </td>
           <td>
-            <label *ngIf="!participante['editando']">{{participante.value.nome}}</label>
+            <label *ngIf="!participante['editando']">
+              {{participante.value.nome}}
+              <div class="alert alert-danger" *ngIf="participante.controls.nome.hasError('required')">
+                Erro: Campo obrigatório!
+              </div>
+            </label>
             <div class="form-group" *ngIf="participante['editando']">
               <mat-form-field appearance="fill">
                 <mat-label>Nome</mat-label>
                 <input matInput formControlName="nome">
                 <mat-error *ngIf="participante.controls.nome.hasError('required')">
-                  Campo obrigatório!
+                  Erro: Campo obrigatório!
                 </mat-error>
               </mat-form-field>
             </div>
           </td>
           <td>
-            <label *ngIf="!participante['editando']">{{participante.value.telefone}}</label>
+            <label *ngIf="!participante['editando']">
+              {{participante.value.telefone}}
+              <div class="alert alert-danger" *ngIf="participante.controls.telefone.hasError('pattern')">
+                Erro: Somente números e sem zeros no início!
+              </div>
+            </label>
             <div class="form-group" *ngIf="participante['editando']">
               <mat-form-field appearance="fill">
                 <mat-label>Telefone</mat-label>
                 <input matInput formControlName="telefone">
                 <mat-error *ngIf="participante.controls.telefone.hasError('pattern')">
-                  Somente números e sem zeros no início!
+                  Erro: Somente números e sem zeros no início!
                 </mat-error>
               </mat-form-field>
             </div>
           </td>
           <td>
-            <label *ngIf="!participante['editando']">{{participante.value.email}}</label>
+            <label *ngIf="!participante['editando']">
+              {{participante.value.email}}
+              <div class="alert alert-danger" *ngIf="participante.controls.email.hasError('email')">
+                Erro: Valor inválido!
+              </div>
+            </label>
             <div class="form-group" *ngIf="participante['editando']">
               <mat-form-field appearance="fill">
                 <mat-label>E-mail</mat-label>
                 <input matInput formControlName="email">
                 <mat-error *ngIf="participante.controls.email.hasError('email')">
-                  Valor inválido!
+                  Erro: Valor inválido!
                 </mat-error>
               </mat-form-field>
             </div>
