@@ -169,7 +169,6 @@
           <tr [formGroupName]="i">
             <td>&nbsp;</td>
             <td colspan="5">
-
               <h3 class="mt-5 text-info">Opções</h3>
               <div class="table-responsive">
                 <table class="table table-striped table-hover" style="width: 100%;"
@@ -235,7 +234,7 @@
                             <button type="button" mat-button class="btn btn-secondary btn-sm"
                               (click)="opcaoEditar(opcao)">Editar</button>
                             <button type="button" mat-button class="btn btn-secondary btn-sm"
-                              (click)="opcaoExcluir(frm, j)">Excluir</button>
+                              (click)="opcaoExcluir(pauta, j)">Excluir</button>
                           </div>
                           <div *ngIf="opcao['editando']">
                             <button type="button" mat-button class="btn btn-secondary btn-sm"
@@ -247,14 +246,21 @@
                   </tbody>
                 </table>
               </div>
+              <div class="alert alert-danger" *ngIf="pauta.controls.opcaoLista.hasError('required')">
+                Informe pelo menos um registro!
+              </div>
               <button type="button" mat-button class="btn btn-secondary btn-sm btn-block"
-                (click)="opcaoIncluir(pauta)">Incluir Opção</button>
-
+                (click)="opcaoIncluir(pauta)">
+                Incluir Opção
+              </button>
             </td>
           </tr>
         </ng-template>
       </tbody>
     </table>
+  </div>
+  <div class="alert alert-danger" *ngIf="frm.controls.pautaLista.hasError('required')">
+    Informe pelo menos um registro!
   </div>
   <button type="button" mat-button class="btn btn-secondary btn-sm btn-block" (click)="pautaIncluir(frm)">
     Incluir Pauta
@@ -352,6 +358,9 @@
             <div class="alert alert-success" *ngIf="participante.valid">
               Válido!
             </div>
+            <div class="alert alert-warning" *ngIf="participante.dirty">
+              Modificado!
+            </div>
             <div class="alert alert-danger" *ngIf="participante.invalid">
               Erro: Inválido!
             </div>
@@ -382,7 +391,7 @@
                   Erro: Campo obrigatório!
                 </mat-error>
                 <mat-error *ngIf="participante.controls.identificacao.hasError('pattern')">
-                  Erro: Somente números e sem zeros no início!
+                  Erro: Somente números e sem zeros no início! Permitido X no final.
                 </mat-error>
               </mat-form-field>
             </div>
@@ -466,8 +475,12 @@
       </tbody>
     </table>
   </div>
+  <div class="alert alert-danger" *ngIf="frm.controls.participanteLista.hasError('required')">
+    Informe pelo menos um registro!
+  </div>
   <button type="button" mat-button class="btn btn-secondary btn-sm btn-block" (click)="participanteIncluir(frm)">Incluir
-    Participante</button>
+    Participante
+  </button>
 
   <div class="text-right footer navbar-fixed-bottom p-4">
     <button type="submit" mat-button class="btn btn-primary btn-block">Salvar</button>

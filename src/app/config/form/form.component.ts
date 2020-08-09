@@ -12,7 +12,6 @@ import { MensagemService } from './../../comum/servico/mensagem/mensagem.service
 import { environment } from './../../../environments/environment';
 import { ConfirmarVotoComponent } from './../../cedula/confirmar-voto/confirmar-voto.component';
 import { MensagemParticipanteComponent } from './../../cedula/mensagem-participante/mensagem-participante.component';
-import { async } from 'rxjs/internal/scheduler/async';
 
 @Component({
   selector: 'app-form',
@@ -159,7 +158,7 @@ export class FormComponent implements OnInit {
   private criarParticipante(valor: Participante): FormGroup {
     const result = this.fb.group({
       id: [valor.id, []],
-      identificacao: [valor.identificacao, [Validators.required, Validators.pattern(/^[1-9]+[\d|X]*$/)]],
+      identificacao: [valor.identificacao, [Validators.required, Validators.pattern(/^[1-9][\d]*[\d|[xX]]*$/)]],
       nome: [valor.nome, [Validators.required]],
       telefone: [valor.telefone, [Validators.pattern(/^[1-9]+[\d]*$/)]],
       email: [valor.email, [Validators.email]],
@@ -185,8 +184,8 @@ export class FormComponent implements OnInit {
     reg['editando'] = true;
   }
 
-  pautaExcluir(frm: FormGroup, pos): void {
-    if (confirm('Confirme a exclusão!')) {
+  async pautaExcluir(frm: FormGroup, pos): Promise<any> {
+    if (await this.mensagem.confirme('Confirme a exclusão!')) {
       (frm.get('pautaLista') as FormArray).removeAt(pos);
     }
   }
@@ -205,8 +204,8 @@ export class FormComponent implements OnInit {
     reg['editando'] = true;
   }
 
-  opcaoExcluir(frm: FormGroup, pos): void {
-    if (confirm('Confirme a exclusão!')) {
+  async opcaoExcluir(frm: FormGroup, pos): Promise<any> {
+    if (await this.mensagem.confirme('Confirme a exclusão!')) {
       (frm.get('opcaoLista') as FormArray).removeAt(pos);
     }
   }
@@ -225,12 +224,12 @@ export class FormComponent implements OnInit {
     reg['editando'] = true;
   }
 
-  participanteExcluir(participanteControl: FormGroup): void {
+  async participanteExcluir(participanteControl: FormGroup): Promise<any> {
     if (participanteControl.invalid) {
       this.mensagem.erro('Não é possível excluir este registro');
       return;
     }
-    if (confirm('Confirme a exclusão!')) {
+    if (await this.mensagem.confirme('Confirme a exclusão!')) {
       participanteControl.addControl('exclui', new FormControl(true, []));
     }
   }
@@ -340,7 +339,20 @@ export class FormComponent implements OnInit {
               if (participante['exclui']) {
                 await this.servico.deleteParticipante(participante.id).toPromise();
               } else {
-                await this.servico.updateParticipante(participante, r).toPromise();
+                // verificar se o registro foi alterado
+                let alterado = false;
+                for (let i = 0; i < (this.frm.get('participanteLista') as FormArray).controls.length; i++) {
+                  let p = (this.frm.get('participanteLista') as FormArray).controls[i];
+                  if (participante.id === p.value.id) {
+                    if (p.dirty) {
+                      alterado = true;
+                    }
+                    break;
+                  }
+                }
+                if (alterado) {
+                  await this.servico.updateParticipante(participante, r).toPromise();
+                }
               }
             } else {
               if (!participante['exclui']) {
@@ -422,7 +434,7 @@ export class FormComponent implements OnInit {
     const lista = this.frm.get('participanteLista').value;
     const participanteIdLista = [];
 
-    if (lista && lista.length && confirm(`Confirma o envio do link, a todos os participantes selecionados, por ${meio}?`)) {
+    if (lista && lista.length && await this.mensagem.confirme(`Confirma o envio do link, a todos os participantes selecionados, por ${meio}?`)) {
       let msgEnvio: string = await this.mensagem.confirmeModelo('Digite a mensagem ou deixe em branco para enviar a cédula', MensagemParticipanteComponent);
       const senha = await this.mensagem.confirmeModelo('Digite a senha de acesso', ConfirmarVotoComponent);
       if (!senha) {

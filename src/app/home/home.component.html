@@ -7,8 +7,12 @@
     <mat-form-field appearance="fill">
       <mat-label>Identificacao</mat-label>
       <input matInput formControlName="identificacao">
-      <mat-error *ngIf="frm.controls.identificacao.hasError('required')">Campo obrigatório!</mat-error>
-      <mat-error *ngIf="frm.controls.identificacao.hasError('pattern')">Informe somente números sem zero à esquerda</mat-error>
+      <mat-error *ngIf="frm.controls.identificacao.hasError('required')">
+        Campo obrigatório!
+      </mat-error>
+      <mat-error *ngIf="frm.controls.identificacao.hasError('pattern')">
+        Informe somente números e sem zeros no início! Permitido X no final.
+      </mat-error>
     </mat-form-field>
   </div>
 </form>

@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Resolve, ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
 import { Observable, of } from 'rxjs';
-import { catchError } from 'rxjs/internal/operators';
+import { catchError } from 'rxjs/operators';
 
 import { ResultadoService } from './resultado.service';
 import { MensagemService } from '../comum/servico/mensagem/mensagem.service';

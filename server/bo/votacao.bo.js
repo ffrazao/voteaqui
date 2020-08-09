@@ -416,7 +416,7 @@ ATENÇÃO: *_memorize esta senha_*, ela será solicitada durante o processo de v
                 resolve(logMsg.id);
               }
             });
-          }, (Math.floor(Math.random() * (5 * 60 * 1000))), mailOptions, mensagem.meio);
+          }, (Math.floor(Math.random() * (15 * 60 * 1000))), mailOptions, mensagem.meio);
         }).then(_ => console.log(`Fim envio...${_}`));
 
       } else if (mensagem.meio === 'sms' && participanteTelefone && participanteTelefone.trim().length) {
