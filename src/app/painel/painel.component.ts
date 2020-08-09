@@ -48,7 +48,7 @@ export class PainelComponent implements OnInit {
   }
 
   filtrarVotacao(votacao: any, params): boolean {
-    return votacao.id == 71 && (!params[1] || params[1].trim().length === 0 ||
+    return (!params[1] || params[1].trim().length === 0 ||
       votacao.nome.trim().toLowerCase().indexOf(params[1].toLowerCase()) >= 0) &&
       (!params[0] || params[0].trim().length === 0 ||
         votacao.situacao === params[0]);

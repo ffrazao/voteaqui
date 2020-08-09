@@ -2,11 +2,12 @@ const ParticipanteDao = require(`../dao/participante.dao`);
 const VotacaoDao = require(`../dao/votacao.dao`);
 
 class ParticipanteBo {
-  constructor(dao, transporterEmail) {
+  constructor(dao, votacaoBo) {
     this.dbDao = dao;
     this.dao = new ParticipanteDao(this.dbDao);
+
+    this.votacaoBo = votacaoBo;
     this.votacaoDao = new VotacaoDao(this.dbDao);
-    this.transporterEmail = transporterEmail;
   }
 
   novo(registro) {
@@ -85,6 +86,10 @@ class ParticipanteBo {
     await this.dao.delete(id);
   }
 
+  async list(votacaoId, pagina) {
+    return await this.getByVotacaoId(votacaoId, pagina);
+  }
+
   async saveLista(id, lista) {
     for (var registro of lista) {
       if (registro.id) {
@@ -95,8 +100,8 @@ class ParticipanteBo {
     }
   }
 
-  async getByVotacaoId(id) {
-    var result = await this.dao.getByVotacaoId(id);
+  async getByVotacaoId(id, pagina = null) {
+    var result = await this.dao.getByVotacaoId(id, pagina);
     for (var registro of result) {
       delete registro.senha;
       delete registro.votacaoId;
@@ -115,30 +120,27 @@ class ParticipanteBo {
   async votar(participanteId) {
     var result = await this.dao.votar(participanteId);
 
-    // enviar email
     var participante = await this.dao.getById(participanteId);
     var votacao = await this.votacaoDao.getById(participante.votacaoId);
-    if (participante.email) {
-      var msg = `<p>Olá ${participante.nome}!,</p>
-      <p></p>
-      <p>Obrigado por ter participado da votação <b><u>${votacao.nome}</u></b></p>`;
-      var mailOptions = {
-        from: `voteaquidf@gmail.com`,
-        to: `${participante.email}`,
-        subject: `Comprovante de Votação`,
-        html: msg,
-      };
-      this.transporterEmail.sendMail(mailOptions, function (error, info) {
-        if (error) {
-          console.log(`Erro ao enviar: `, error);
-        } else {
-          console.log(`Email sent: ` + info.response);
-        }
-      });
-    }
-    if (participante.telefone) {
 
-    }
+    // enviar email
+    var mensagem = {
+      senha: null,
+      meio: 'email',
+      votacao: { id: votacao.id, nome: votacao.nome },
+      API_URL: null,
+      participanteIdLista: [participante.id],
+      msg:
+        `<p>Olá ${participante.nome}!,</p>
+<p></p>
+<p>Obrigado por ter participado da votação <b><u>${votacao.nome}</u></b></p>`
+    };
+    this.votacaoBo.enviarMensagem(mensagem, false);
+
+    // enviar sms
+    mensagem.meio = 'sms';
+    mensagem.msg = `Olá ${participante.nome}!. Obrigado por ter participado da votação ${votacao.nome}`.substr(0, 159);
+    this.votacaoBo.enviarMensagem(mensagem, false);
 
     return result;
   }

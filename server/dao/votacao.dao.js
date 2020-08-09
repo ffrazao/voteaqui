@@ -135,6 +135,13 @@ class VotacaoDao {
     AND    votou = 1`, [id]);
   }
 
+  getTotalParticipantes(id) {
+    return this.dao.get(`
+    SELECT COUNT(*) AS total
+    FROM   Participante
+    WHERE  votacaoId = ?`, [id]);
+  }
+
   updateSenha(id, senhaNova) {
     return this.dao.run(
       `UPDATE ${this.nomeTabela}

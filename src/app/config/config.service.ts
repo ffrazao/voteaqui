@@ -5,6 +5,7 @@ import { Observable } from 'rxjs';
 import { MensagemService } from '../comum/servico/mensagem/mensagem.service';
 import { environment } from '../../environments/environment';
 import { Votacao } from '../modelo/entidade/votacao';
+import { Participante } from '../modelo/entidade/participante';
 
 @Injectable({
   providedIn: 'root'
@@ -40,6 +41,22 @@ export class ConfigService {
     return this.http.get(`${environment.API_URL}/api/votacao`);
   }
 
+  public createParticipante(dados: Participante, votacaoId: number): Observable<any> {
+    return this.http.post(`${environment.API_URL}/api/participante/${votacaoId}`, dados);
+  }
+
+  public updateParticipante(dados: Participante, votacaoId: number): Observable<any> {
+    return this.http.put(`${environment.API_URL}/api/participante/${votacaoId}`, dados);
+  }
+
+  public deleteParticipante(id: number): Observable<any> {
+    return this.http.delete(`${environment.API_URL}/api/participante/${id}`);
+  }
+
+  public listParticipante(votacaoId: number, pagina:number): Observable<any> {
+    return this.http.get(`${environment.API_URL}/api/participante/votacao/${votacaoId}/pag/${pagina}`);
+  }
+
   public enviarMensagem(mensagem: {
     senha: string,
     meio: string,
@@ -48,7 +65,7 @@ export class ConfigService {
     participanteIdLista: number[],
     msg: string
   }): Observable<any> {
-    return this.http.post(`${environment.API_URL}/api/votacao/cedula`, mensagem);
+    return this.http.post(`${environment.API_URL}/api/votacao/mensagem`, mensagem);
   }
 
   public alterarSenha(id: any, senhas: any): Observable<any> {

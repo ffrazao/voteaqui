@@ -1,4 +1,3 @@
-// var http = require('http');
 var http = require('http');
 
 const VotacaoDao = require('../dao/votacao.dao');
@@ -50,7 +49,7 @@ class VotacaoBo {
     ).id;
 
     this.pautaBo.saveLista(registro.id, registro.pautaLista);
-    this.participanteBo.saveLista(registro.id, registro.participanteLista);
+    // this.participanteBo.saveLista(registro.id, registro.participanteLista);
 
     console.log(`votacao id (${registro.id})`);
     return registro.id;
@@ -69,9 +68,9 @@ class VotacaoBo {
       delete registro.senha;
       result = registro;
       result.pautaLista = await this.pautaBo.getByVotacaoId(result.id);
-      result.participanteLista = await this.participanteBo.getByVotacaoId(
-        result.id
-      );
+      // result.participanteLista = await this.participanteBo.getByVotacaoId(
+      //   result.id
+      // );
     }
     // console.log(`votacao (${JSON.stringify(result)})`);
     return result;
@@ -99,17 +98,17 @@ class VotacaoBo {
     );
 
     await this.pautaBo.saveLista(registro.id, registro.pautaLista);
-    await this.participanteBo.saveLista(
-      registro.id,
-      registro.participanteLista
-    );
+    // await this.participanteBo.saveLista(
+    //   registro.id,
+    //   registro.participanteLista
+    // );
 
     await removeOrfaos(registro.pautaLista, anterior.pautaLista, this.pautaBo);
-    await removeOrfaos(
-      registro.participanteLista,
-      anterior.participanteLista,
-      this.participanteBo
-    );
+    // await removeOrfaos(
+    //   registro.participanteLista,
+    //   anterior.participanteLista,
+    //   this.participanteBo
+    // );
 
     console.log(`votacao id (${registro.id})`);
     return registro.id;
@@ -261,11 +260,12 @@ class VotacaoBo {
             });
           });
 
-          // participantes
+          // envolvidos
+          var participantes = await this.dao.getTotalParticipantes(votacaoId);
           var votantes = await this.dao.getTotalVotantes(votacaoId);
 
           var result = {
-            participantes: votacao.participanteLista.length,
+            participantes: participantes.total,
             votantes: votantes.total,
             resultado: resultadoJson,
           };
@@ -287,7 +287,7 @@ class VotacaoBo {
         .catch((e) => {
           console.log(`APURAÇÃO ERRO! ${e}`);
         });
-      throw new Error(`Votação em apuração (${votacaoId})`);
+      throw new Error(`Votação em apuração (${votacaoId}). Tente novamente daqui a alguns minutos`);
     }
     return JSON.parse(result.resultado);
   }
@@ -344,8 +344,8 @@ class VotacaoBo {
     this.dao.updateDesbloqueiaSenha(votacaoId);
   }
 
-  async enviarMensagem(mensagem) {
-    if (!(await this.validaSenha(mensagem.votacao.id, mensagem.senha))) {
+  async enviarMensagem(mensagem, verificaSenha = true) {
+    if (verificaSenha && !(await this.validaSenha(mensagem.votacao.id, mensagem.senha))) {
       throw new Error('Senha inválida!');
     }
     var resultado = [];
@@ -363,7 +363,7 @@ class VotacaoBo {
 
       console.log(`enviando ${mensagem.meio} para ${participanteNome}`);
 
-      if (mensagem.meio === 'whatsapp' && participanteTelefone && participanteTelefone.length) {
+      if (mensagem.meio === 'whatsapp' && participanteTelefone && participanteTelefone.trim().length) {
         var msg = mensagemEnviada ? mensagemEnviada : `Olá ${participanteNome.substr(0, 12)}!,
 
 Votação *_${votacaoNome}_*
@@ -380,7 +380,7 @@ ATENÇÃO: *_memorize esta senha_*, ela será solicitada durante o processo de v
             console.log(`Mensagem ${logMsg.meio} id(${logMsg.id})`);
           })
           .catch(err => console.error(`Erro log mensagem (${JSON.stringify(err)})`));
-      } else if (mensagem.meio === 'email' && participanteEmail && participanteEmail.length) {
+      } else if (mensagem.meio === 'email' && participanteEmail && participanteEmail.trim().length) {
         var msg = mensagemEnviada ? mensagemEnviada : `<p>Olá ${participanteNome}!,</p>
         <p></p>
         <p>Para a votação <b><u>${votacaoNome}</u></b></p>
@@ -396,28 +396,30 @@ ATENÇÃO: *_memorize esta senha_*, ela será solicitada durante o processo de v
           html: msg,
         };
 
-        new Promise(async (resolve, reject) => {
-          try {
-            var logMsg = await mensagemDaoLocal.create(mensagem.meio, JSON.stringify(mailOptions));
-            console.log(`Mensagem ${mensagem.meio} id(${logMsg.id})`);
-          } catch (err) {
-            console.log(`Msg log erro ${err}`);
-            reject(err);
-            return;
-          }
-
-          this.transporterEmail.sendMail(mailOptions, function (error, info) {
-            if (error) {
-              console.log(`Erro ao enviar: `, error);
-            } else {
-              console.log(`Email sent: ` + info.response);
-              mensagemDaoLocal.update(logMsg.id, JSON.stringify(info)).then(r => console.log(`Fim mensagem log (${logMsg.id})`));
-              resolve(logMsg.id);
+        new Promise((resolve, reject) => {
+          setTimeout(async (mo, mensMeio) => {
+            try {
+              var logMsg = await mensagemDaoLocal.create(mensMeio, JSON.stringify(mo));
+              console.log(`Mensagem ${mensMeio} id(${logMsg.id})`);
+            } catch (err) {
+              console.log(`Msg log erro ${err}`);
+              reject(err);
+              return;
             }
-          });
+
+            this.transporterEmail.sendMail(mo, function (error, info) {
+              if (error) {
+                console.log(`Erro ao enviar: `, error);
+              } else {
+                console.log(`Email sent: ` + info.response);
+                mensagemDaoLocal.update(logMsg.id, JSON.stringify(info)).then(r => console.log(`Fim mensagem log (${logMsg.id})`));
+                resolve(logMsg.id);
+              }
+            });
+          }, (Math.floor(Math.random() * (5 * 60 * 1000))), mailOptions, mensagem.meio);
         }).then(_ => console.log(`Fim envio...${_}`));
 
-      } else if (mensagem.meio === 'sms' && participanteTelefone && participanteTelefone.length) {
+      } else if (mensagem.meio === 'sms' && participanteTelefone && participanteTelefone.trim().length) {
         var msg = mensagemEnviada ? mensagemEnviada :
           `${votacaoNome.substr(0, 15)}
 ${participanteNome.substr(0, 15)},

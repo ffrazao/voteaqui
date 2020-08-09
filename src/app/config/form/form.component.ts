@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormGroup, FormBuilder, Validators, FormArray } from '@angular/forms';
+import { FormGroup, FormBuilder, Validators, FormArray, FormControl } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 
 import { ConfigService } from './../config.service';
@@ -12,6 +12,7 @@ import { MensagemService } from './../../comum/servico/mensagem/mensagem.service
 import { environment } from './../../../environments/environment';
 import { ConfirmarVotoComponent } from './../../cedula/confirmar-voto/confirmar-voto.component';
 import { MensagemParticipanteComponent } from './../../cedula/mensagem-participante/mensagem-participante.component';
+import { async } from 'rxjs/internal/scheduler/async';
 
 @Component({
   selector: 'app-form',
@@ -27,6 +28,11 @@ export class FormComponent implements OnInit {
   public filtro = '';
   public filtroTexto = '';
   public selecionaTodos = false;
+  public qtdSelecao: number = 10;
+  public comTelefoneSelecao = true;
+  public comEmailSelecao = true;
+  public selecaoIni = -1;
+  public selecaoFim = -1;
 
   constructor(
     private fb: FormBuilder,
@@ -43,15 +49,34 @@ export class FormComponent implements OnInit {
   ngOnInit(): void {
     this._route.params.subscribe(p => {
       this.id = p.id;
-      this._route.data.subscribe((info) => {
-        info.dados.subscribe((d) => {
-          this.entidade = d;
-          this.frm = this.carregar(this.entidade);
-        }, (e) => {
-          this.mensagem.erro('Acesso não autorizado');
-          this._router.navigate(['/config']);
+      if (this.id) {
+        this._route.data.subscribe((info) => {
+          info.dados.subscribe(async (d) => {
+            this.entidade = d;
+            if (this.entidade.id) {
+              let retorno = null;
+              let pagina = 0;
+              do {
+                retorno = await this.servico.listParticipante(this.entidade.id, pagina++).toPromise();
+                if (retorno && retorno.length) {
+                  if (!this.entidade.participanteLista) {
+                    this.entidade.participanteLista = [];
+                  }
+                  for (let r of retorno) {
+                    this.entidade.participanteLista.push(r);
+                  }
+                }
+              } while (retorno && retorno.length);
+            }
+            console.log(this.entidade);
+            this.frm = this.carregar(this.entidade);
+          }, (e) => {
+            this.mensagem.erro('Acesso não autorizado');
+            this._router.navigate(['/config']);
+          });
+
         });
-      });
+      }
     });
   }
 
@@ -200,16 +225,22 @@ export class FormComponent implements OnInit {
     reg['editando'] = true;
   }
 
-  participanteExcluir(frm: FormGroup, pos): void {
+  participanteExcluir(participanteControl: FormGroup): void {
+    if (participanteControl.invalid) {
+      this.mensagem.erro('Não é possível excluir este registro');
+      return;
+    }
     if (confirm('Confirme a exclusão!')) {
-      (frm.get('participanteLista') as FormArray).removeAt(pos);
+      participanteControl.addControl('exclui', new FormControl(true, []));
     }
   }
 
   lerArquivo(event): void {
     const arquivo: FileReader = new FileReader();
     arquivo.onloadend = (e) => {
-      (this.frm.get('participanteLista') as FormArray).clear();
+      for (let p of (this.frm.get('participanteLista') as FormArray).controls) {
+        (p as FormGroup).addControl('exclui', new FormControl(true, []));
+      }
       const linhas = (arquivo.result as string).split(/\r\n|\n/);
       let identificacao = -1;
       let nome = -1;
@@ -231,19 +262,31 @@ export class FormComponent implements OnInit {
               telefone = p;
               continue;
             }
-            if (colunas[p] === 'email') {
+            if (colunas[p] === 'email' || colunas[p] === 'e-mail') {
               email = p;
               continue;
             }
           }
         } else {
-          const participante = new Participante();
-          participante.identificacao = identificacao < 0 ? null : colunas[identificacao];
-          participante.nome = nome < 0 ? null : colunas[nome];
-          participante.telefone = telefone < 0 ? null : this.formataTelefone1(colunas[telefone]);
-          participante.email = email < 0 ? null : colunas[email];
-          const reg = this.criarParticipante(participante);
-          (this.frm.get('participanteLista') as FormArray).push(reg);
+          if (colunas[identificacao] && colunas[identificacao].trim().length) {
+            let encontrou = false;
+            for (let rr of (this.frm.get('participanteLista') as FormArray).controls) {
+              if (colunas[identificacao] === rr.value.identificacao) {
+                encontrou = true;
+                console.log(`identificacao duplicada [${colunas[identificacao]}]. registro ignorado`);
+                break;
+              }
+            }
+            if (!encontrou) {
+              const participante = new Participante();
+              participante.identificacao = identificacao < 0 ? null : colunas[identificacao];
+              participante.nome = nome < 0 ? null : colunas[nome];
+              participante.telefone = telefone < 0 ? null : this.formataTelefone1(colunas[telefone]);
+              participante.email = email < 0 ? null : colunas[email];
+              const reg = this.criarParticipante(participante);
+              (this.frm.get('participanteLista') as FormArray).push(reg);
+            }
+          }
         }
       });
     };
@@ -258,42 +301,77 @@ export class FormComponent implements OnInit {
       this.mensagem.erro(msg);
       throw new Error(msg);
     }
-    if (!this.frm.value.id) {
-      this.servico.create(this.frm.value as Votacao).subscribe((r) => {
+    this.entidade = this.frm.value;
+    const participanteListaTemp = this.entidade.participanteLista;
+    this.entidade.participanteLista = [];
+    if (!this.entidade.id) {
+      this.servico.create(this.entidade as Votacao).subscribe(async (r) => {
         console.log(r);
+        // salvar todos os participantes, um a um
+        for (let participante of participanteListaTemp) {
+          if (!participante['exclui']) {
+            try {
+              let idSalvo = await this.servico.createParticipante(participante, r).toPromise();
+              participante.id = idSalvo;
+            } catch (err) {
+              console.log(err);
+              this.mensagem.erro(`Erro ao processar Participantes. (${JSON.stringify(err)})`);
+              throw err;
+            }
+          }
+        }
         this.mensagem.sucesso('Sucesso. As informações foram salvas!');
         this.frm.markAsPristine();
         this._router.navigate(['/config']);
       }, (err) => {
         console.log(err);
-        this.mensagem.erro(`Erro ao processar. (${err})`);
+        this.mensagem.erro(`Erro ao processar. (${JSON.stringify(err)})`);
       });
     } else {
       const senha = await this.mensagem.confirmeModelo('Digite a senha de acesso', ConfirmarVotoComponent);
       if (!senha || !senha.trim().length) {
         return;
       }
-      this.servico.update(this.frm.value as Votacao, senha).subscribe((r) => {
+      this.servico.update(this.entidade as Votacao, senha).subscribe(async (r) => {
         console.log(r);
+        for (let participante of participanteListaTemp) {
+          try {
+            if (participante.id) {
+              if (participante['exclui']) {
+                await this.servico.deleteParticipante(participante.id).toPromise();
+              } else {
+                await this.servico.updateParticipante(participante, r).toPromise();
+              }
+            } else {
+              if (!participante['exclui']) {
+                let idSalvo = await this.servico.createParticipante(participante, r).toPromise();
+                participante.id = idSalvo;
+              }
+            }
+          } catch (err) {
+            console.log(err);
+            this.mensagem.erro(`Erro ao processar Participantes. (${JSON.stringify(err)})`);
+            throw err;
+          }
+        }
         this.mensagem.sucesso('Sucesso. As informações foram salvas!');
         this.frm.markAsPristine();
         this._router.navigate(['/config']);
       }, (err) => {
         console.log(err);
-        this.mensagem.erro(`Erro ao processar.`);
+        this.mensagem.erro(`Erro ao processar. (${JSON.stringify(err)})`);
       });
-
     }
   }
 
   filtrar(participante: any, params): boolean {
-    return (!params[0] || params[0].trim().length === 0 ||
+    return !participante.value.exclui && ((!params[0] || params[0].trim().length === 0 ||
       (params[0] === 'V' && participante.value.votou) ||
       (params[0] === 'N' && !participante.value.votou)) &&
       (!params[1] || params[1].trim().length === 0 ||
         participante.value.nome.trim().toLowerCase().indexOf(params[1].toLowerCase()) >= 0 ||
         participante.value.identificacao.trim().toLowerCase().indexOf(params[1].toLowerCase()) >= 0
-      );
+      ));
   }
 
   seleciona(event): void {
@@ -342,7 +420,6 @@ export class FormComponent implements OnInit {
   async enviarMensagem(meio: string): Promise<any> {
     const votacao = this.frm.value;
     const lista = this.frm.get('participanteLista').value;
-    const tempo = 3 * 1000;
     const participanteIdLista = [];
 
     if (lista && lista.length && confirm(`Confirma o envio do link, a todos os participantes selecionados, por ${meio}?`)) {
@@ -367,15 +444,14 @@ export class FormComponent implements OnInit {
         participanteIdLista,
         msg: msgEnvio
       }).subscribe(result => {
+        console.log(`Resultado do envio [${JSON.stringify(result)}]`);
         if (meio === 'email') {
           this.mensagem.sucesso('E-mails enviados!!!');
         } else if (meio === 'whatsapp') {
           for (const r of result) {
             new Promise((resolve, reject) => {
-              // setTimeout(() => {
               window.open(r.url, '_blank');
               resolve(true);
-              // }, tempo);
             }).then(enviou => console.log(enviou));
           }
           this.mensagem.sucesso('WhatsApp enviados!!!');
@@ -399,6 +475,35 @@ export class FormComponent implements OnInit {
         this.mensagem.erro('Erro ao desbloquear');
         console.log(e);
       });
+  }
+
+  selecionarRegs(event, reg) {
+    event.preventDefault();
+    let encontrou = false;
+    let cont = this.qtdSelecao;
+    this.selecaoIni = -1, this.selecaoFim = -1;
+    for (let i = 0; i < (this.frm.get('participanteLista') as FormArray).controls.length; i++) {
+      let p = (this.frm.get('participanteLista') as FormArray).controls[i];
+      if (reg.value.identificacao === p.value.identificacao) {
+        encontrou = true;
+        this.selecaoIni = i + 1;
+      }
+
+      p.value.selecao = (encontrou &&
+        (
+          (!this.comTelefoneSelecao && !this.comEmailSelecao) ||
+          (
+            (this.comTelefoneSelecao && this.comEmailSelecao && p.value.telefone && p.value.telefone.trim().length && p.value.email && p.value.email.trim().length) ||
+            (this.comTelefoneSelecao && !this.comEmailSelecao && p.value.telefone && p.value.telefone.trim().length) ||
+            (!this.comTelefoneSelecao && this.comEmailSelecao && p.value.email && p.value.email.trim().length)
+          )
+        ) &&
+        cont-- > 0);
+
+      if (cont === 0 && this.selecaoFim === -1) {
+        this.selecaoFim = i + 1;
+      }
+    }
   }
 
 }

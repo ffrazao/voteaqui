@@ -7,6 +7,7 @@ var transporter = nodemailer.createTransport({
     // pass: 'Laco-de-amor2020'
     pass: "Vote!QAZxsw2",
   },
+  
 });
 
 module.exports = transporter;

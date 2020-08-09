@@ -65,9 +65,14 @@ class ParticipanteDao {
     return this.dao.all(`SELECT * FROM ${this.nomeTabela}`);
   }
 
-  getByVotacaoId(id) {
+  getByVotacaoId(id, pagina = null) {
+    var sql = `SELECT * FROM ${this.nomeTabela} 
+    WHERE votacaoId = ? 
+    ORDER BY nome 
+    ${pagina ? 'limit ' + (pagina * 100) + ', 100': '' }`;
+    console.log(`participanteDao.getByVotacaoId(${JSON.stringify(sql)})`);
     return this.dao.all(
-      `SELECT * FROM ${this.nomeTabela} WHERE votacaoId = ?`,
+      sql,
       [id]
     );
   }

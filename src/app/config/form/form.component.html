@@ -261,49 +261,63 @@
   </button>
 
   <h2 class="mt-5 text-info">Participantes</h2>
+  <div class="sticky-top" style="background-color: bisque;">
+    <input type="file" class="btn btn-secondary btn-sm" (change)="lerArquivo($event)">
+    <button type="button" mat-button class="btn btn-secondary btn-sm" (click)="enviarMensagem('whatsapp')"
+      *ngIf="totalSelecao()">
+      WhatsApp <img src="assets/whatsapp.png" style="width: 40px; height: 30px;">
+    </button>
+    <button type="button" mat-button class="btn btn-secondary btn-sm" (click)="enviarMensagem('email')"
+      *ngIf="totalSelecao()">
+      E-mail <img src="assets/email.png" style="width: 20px; height: 15px;">
+    </button>
+    <button type="button" mat-button class="btn btn-secondary btn-sm" (click)="enviarMensagem('sms')"
+      *ngIf="totalSelecao()">
+      SMS <img src="assets/sms.jpg" style="width: 20px; height: 15px;">
+    </button>
 
-  <input type="file" class="btn btn-secondary btn-sm" (change)="lerArquivo($event)">
-  <button type="button" mat-button class="btn btn-secondary btn-sm" (click)="enviarMensagem('whatsapp')"
-    *ngIf="totalSelecao()">
-    Enviar Link por WhatsApp <img src="assets/whatsapp.png" style="width: 40px; height: 30px;">
-  </button>
-  <button type="button" mat-button class="btn btn-secondary btn-sm" (click)="enviarMensagem('email')"
-    *ngIf="totalSelecao()">
-    Enviar Link por E-mail <img src="assets/email.png" style="width: 20px; height: 15px;">
-  </button>
-  <button type="button" mat-button class="btn btn-secondary btn-sm" (click)="enviarMensagem('sms')"
-    *ngIf="totalSelecao()">
-    Enviar Link por SMS <img src="assets/sms.jpg" style="width: 20px; height: 15px;">
-  </button>
-
-  <div class="d-sm-flex justify-content-between border border-secondary">
-    <div style="font-size:70%">
-      <div class="custom-control custom-radio custom-control-inline">
-        <input type="radio" [(ngModel)]="filtro" [ngModelOptions]="{standalone: true}" id="filtroT" name="filtro"
-          class="custom-control-input" value="">
-        <label class="custom-control-label" for="filtroT">Todos</label>
+    <div class="d-sm-flex justify-content-between border border-secondary">
+      <div style="font-size:70%">
+        <div class="custom-control custom-radio custom-control-inline">
+          <input type="radio" [(ngModel)]="filtro" [ngModelOptions]="{standalone: true}" id="filtroT" name="filtro"
+            class="custom-control-input" value="">
+          <label class="custom-control-label" for="filtroT">Todos</label>
+        </div>
+        <div class="custom-control custom-radio custom-control-inline">
+          <input type="radio" [(ngModel)]="filtro" [ngModelOptions]="{standalone: true}" id="filtroF" name="filtro"
+            class="custom-control-input" value="V">
+          <label class="custom-control-label" for="filtroF">Já votaram</label>
+        </div>
+        <div class="custom-control custom-radio custom-control-inline">
+          <input type="radio" [(ngModel)]="filtro" [ngModelOptions]="{standalone: true}" id="filtroE" name="filtro"
+            class="custom-control-input" value="N">
+          <label class="custom-control-label" for="filtroE">Não votaram</label>
+        </div>
+        <div>
+          Exibindo: {{(getLista(frm, 'participanteLista').controls | callback: filtrar: [filtro, filtroTexto]).length}}
+          de
+          {{(getLista(frm, 'participanteLista').controls).length}} registro(s) =
+          {{((getLista(frm, 'participanteLista').controls | callback: filtrar: [filtro, filtroTexto]).length / (getLista(frm, 'participanteLista').controls).length) * 100 | number}}%
+        </div>
+        <div class="p-2 m-2">
+          <label>Qtd. Seleção</label>
+          <input matInput [(ngModel)]="qtdSelecao" [ngModelOptions]="{standalone: true}" name="qtdSelecao"
+            style="width: 20px;">
+          <mat-checkbox [(ngModel)]="comTelefoneSelecao" [ngModelOptions]="{standalone: true}" color="primary"
+            [name]="comTelefoneSelecao">com telefone</mat-checkbox>
+          <mat-checkbox [(ngModel)]="comEmailSelecao" [ngModelOptions]="{standalone: true}" color="primary"
+            [name]="comEmailSelecao">com e-mail</mat-checkbox>
+          <label *ngIf="selecaoIni >= 0 && selecaoFim >= 0">
+            Ultima Selecao {{selecaoIni}} - {{selecaoFim}}
+          </label>
+        </div>
       </div>
-      <div class="custom-control custom-radio custom-control-inline">
-        <input type="radio" [(ngModel)]="filtro" [ngModelOptions]="{standalone: true}" id="filtroF" name="filtro"
-          class="custom-control-input" value="V">
-        <label class="custom-control-label" for="filtroF">Já votaram</label>
+      <div class="form-group" *ngIf="filtro===''">
+        <mat-form-field appearance="fill">
+          <mat-label>Pesquisar</mat-label>
+          <input matInput [(ngModel)]="filtroTexto" [ngModelOptions]="{standalone: true}" name="filtroTexto">
+        </mat-form-field>
       </div>
-      <div class="custom-control custom-radio custom-control-inline">
-        <input type="radio" [(ngModel)]="filtro" [ngModelOptions]="{standalone: true}" id="filtroE" name="filtro"
-          class="custom-control-input" value="N">
-        <label class="custom-control-label" for="filtroE">Não votaram</label>
-      </div>
-      <div>
-        Exibindo: {{(getLista(frm, 'participanteLista').controls | callback: filtrar: [filtro, filtroTexto]).length}} de
-        {{(getLista(frm, 'participanteLista').controls).length}} registro(s) =
-        {{((getLista(frm, 'participanteLista').controls | callback: filtrar: [filtro, filtroTexto]).length / (getLista(frm, 'participanteLista').controls).length) * 100 | number}}%
-      </div>
-    </div>
-    <div class="form-group" *ngIf="filtro===''">
-      <mat-form-field appearance="fill">
-        <mat-label>Pesquisar</mat-label>
-        <input matInput [(ngModel)]="filtroTexto" [ngModelOptions]="{standalone: true}" name="filtroTexto">
-      </mat-form-field>
     </div>
   </div>
 
@@ -335,10 +349,20 @@
           [formGroupName]="i" [class]="participante.value.senhaTentativa >= 3 ? 'table-danger': ''">
           <td>
             {{i+1}}.
+            <div class="alert alert-success" *ngIf="participante.valid">
+              Válido!
+            </div>
+            <div class="alert alert-danger" *ngIf="participante.invalid">
+              Erro: Inválido!
+            </div>
           </td>
           <td>
             <mat-checkbox [(ngModel)]="participante.value.selecao" [ngModelOptions]="{standalone: true}" color="primary"
               [name]="'seleciona' + i"></mat-checkbox>
+            <button mat-mini-fab color="primary" class="m-2" type="button" aria-label="Selecionar"
+              (click)="selecionarRegs($event, participante)">
+              +{{qtdSelecao}}
+            </button>
           </td>
           <td>
             <label *ngIf="!participante['editando']">
@@ -417,10 +441,10 @@
           <td>
             <mat-checkbox [checked]="participante.value.votou" [disabled]="true"></mat-checkbox>
           </td>
-          <td>
-            Tentativas {{participante.value.senhaTentativa}}, tempo desbloqueio {{participante.value.senhaBloqueio}},
-            Tot. Desbloqueio
-            {{participante.value.senhaTotDesbloqueio}}
+          <td style="font-size: 70%;">
+            <div>Tentativas {{participante.value.senhaTentativa}},</div>
+            <div>Tempo desbloqueio {{participante.value.senhaBloqueio}},</div>
+            <div>Tot. Desbloqueio {{participante.value.senhaTotDesbloqueio}}</div>
             <button type="button" class="btn btn-primary" *ngIf="participante.value.senhaTentativa >= 3"
               (click)="desbloquear(participante.value.id)">Desbloquear</button>
           </td>
@@ -430,7 +454,7 @@
                 <button type="button" mat-button class="btn btn-secondary btn-sm"
                   (click)="participanteEditar(participante)">Editar</button>
                 <button type="button" mat-button class="btn btn-secondary btn-sm"
-                  (click)="participanteExcluir(frm, i)">Excluir</button>
+                  (click)="participanteExcluir(participante)">Excluir</button>
               </div>
               <div *ngIf="participante['editando']">
                 <button type="button" mat-button class="btn btn-secondary btn-sm"
