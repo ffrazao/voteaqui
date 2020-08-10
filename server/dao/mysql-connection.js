@@ -1,13 +1,23 @@
 const mysql = require("mysql");
 
+// const db_config = {
+//   host: "us-cdbr-east-02.cleardb.com",
+//   user: "b2dd9c3cee1fce",
+//   password: "f877cc83",
+//   database: "heroku_f33133c167d57c0",
+//   flags: "reconnect=true",
+//   dateStrings: true,
+// };
+
 const db_config = {
-  host: "us-cdbr-east-02.cleardb.com",
+  host: "us-mm-dca-95e55b8cdaff.g5.cleardb.net",
   user: "b2dd9c3cee1fce",
   password: "f877cc83",
   database: "heroku_f33133c167d57c0",
   flags: "reconnect=true",
   dateStrings: true,
 };
+
 
 var myArgs = process.argv.slice(2);
 
