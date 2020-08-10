@@ -158,7 +158,7 @@ export class FormComponent implements OnInit {
   private criarParticipante(valor: Participante): FormGroup {
     const result = this.fb.group({
       id: [valor.id, []],
-      identificacao: [valor.identificacao, [Validators.required, Validators.pattern(/^[1-9][\d]*[\d|[xX]]*$/)]],
+      identificacao: [valor.identificacao, [Validators.required, Validators.pattern(/(^[1-9][\d]*[\dxX]$)|^[1-9]$/)]],
       nome: [valor.nome, [Validators.required]],
       telefone: [valor.telefone, [Validators.pattern(/^[1-9]+[\d]*$/)]],
       email: [valor.email, [Validators.email]],

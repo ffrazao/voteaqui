@@ -352,7 +352,7 @@
       <tbody formArrayName="participanteLista">
         <tr
           *ngFor="let participante of getLista(frm, 'participanteLista').controls | callback: filtrar: [filtro, filtroTexto]; let i = index"
-          [formGroupName]="i" [class]="participante.value.senhaTentativa >= 3 ? 'table-danger': ''">
+          [formGroupName]="i" [class]="participante.value.senhaTentativa >= 5 ? 'table-danger': ''">
           <td>
             {{i+1}}.
             <div class="alert alert-success" *ngIf="participante.valid">
@@ -454,7 +454,7 @@
             <div>Tentativas {{participante.value.senhaTentativa}},</div>
             <div>Tempo desbloqueio {{participante.value.senhaBloqueio}},</div>
             <div>Tot. Desbloqueio {{participante.value.senhaTotDesbloqueio}}</div>
-            <button type="button" class="btn btn-primary" *ngIf="participante.value.senhaTentativa >= 3"
+            <button type="button" class="btn btn-primary" *ngIf="participante.value.senhaTentativa >= 5"
               (click)="desbloquear(participante.value.id)">Desbloquear</button>
           </td>
           <td>

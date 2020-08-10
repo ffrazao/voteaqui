@@ -46,12 +46,12 @@ body {
 body {
   margin: 0;
   font-family: Roboto, "Helvetica Neue", sans-serif;
-  background-image: url("assets/papel.jpg");
-  background-repeat: repeat;
-  background-position: right 20px;
-  background-attachment: scroll;
-  // background-image: url("assets/logo_transparente4.png"), url("assets/papel.jpg");
-  // background-repeat: no-repeat, repeat;
-  // background-position: bottom 20px right 20px;
-  // background-attachment: fixed, scroll;
+  // background-image: url("assets/papel.jpg");
+  // background-repeat: repeat;
+  // background-position: right 20px;
+  // background-attachment: scroll;
+  background-image: url("assets/ascap-transp-50-pb-esmaec-1.png"), url("assets/papel.jpg");
+  background-repeat: no-repeat, repeat;
+  background-position: bottom 20px right 20px;
+  background-attachment: fixed, scroll;
 }

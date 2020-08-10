@@ -506,7 +506,7 @@ app.post('/api/voto/:identificacao/:votacaoId/:senha', async function (
       if (tentativa.senhaBloqueio) {
         throw new Error(`Senha Bloqueada!`);
       } else {
-        throw new Error(`Senha inválida! Tentativa ${tentativa.senhaTentativa} de 3`);
+        throw new Error(`Senha inválida! Tentativa ${tentativa.senhaTentativa} de 5`);
       }
     }
     getConexaoMySql().query('BEGIN');

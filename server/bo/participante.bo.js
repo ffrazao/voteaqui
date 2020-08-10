@@ -172,7 +172,7 @@ class ParticipanteBo {
       registro.senhaTentativa++;
       console.log('errou', registro.senhaTentativa);
     }
-    if (registro.senhaTentativa >= 3) {
+    if (registro.senhaTentativa >= 5) {
       var bloqueio = new Date(new Date().getTime() + (30 * 60000));
       registro.senhaBloqueio = bloqueio;
       console.log(

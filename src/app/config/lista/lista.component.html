@@ -15,7 +15,7 @@
       </tr>
     </thead>
     <tbody>
-      <tr *ngFor="let registro of entidade; let i = index" [class]="registro.senhaTentativa >= 3 ? 'table-danger': ''">
+      <tr *ngFor="let registro of entidade; let i = index" [class]="registro.senhaTentativa >= 5 ? 'table-danger': ''">
         <td>
           {{i+1}}.
         </td>

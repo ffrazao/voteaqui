@@ -26,7 +26,7 @@ export class HomeComponent implements OnInit {
 
   criarFrm(): FormGroup {
     const result = this.formBuilder.group({
-      identificacao: ['', [Validators.required, Validators.pattern(/^[1-9][\d]*[\d|[xX]]*$/)]],
+      identificacao: ['', [Validators.required, Validators.pattern(/(^[1-9][\d]*[\dxX]$)|^[1-9]$/)]],
     });
     return result;
   }
