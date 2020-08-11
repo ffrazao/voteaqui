@@ -26,6 +26,11 @@ export class ListaComponent implements OnInit {
   ngOnInit(): void {
     this._route.data.subscribe((info) => {
       this.entidade = info.dados;
+      for (let i = this.entidade.length -1; i >=0 ; i--) {
+        if (this.entidade[i].codigo === 'ascap20202024') {
+          this.entidade.splice(i, 1);
+        }
+      }
     });
   }
 
