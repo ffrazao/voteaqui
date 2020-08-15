@@ -19,6 +19,8 @@ class ParticipanteDao {
       senhaTotDesbloqueio INTEGER NOT NULL DEFAULT '0',
       votou               BOOLEAN NOT NULL,
       votacaoId           INTEGER NOT NULL,
+      criadoEm            TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      atualizadoEm        TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
       CONSTRAINT    ${this.nomeTabela}_fk_votacaoId FOREIGN KEY (votacaoId)
       REFERENCES    Votacao(id) ON UPDATE CASCADE ON DELETE CASCADE
     )`;
@@ -66,9 +68,9 @@ class ParticipanteDao {
   }
 
   getByVotacaoId(id, pagina = null) {
-    var sql = `SELECT * FROM ${this.nomeTabela} 
-    WHERE votacaoId = ? 
-    ORDER BY nome 
+    var sql = `SELECT * FROM ${this.nomeTabela}
+    WHERE votacaoId = ?
+    ORDER BY nome
     ${pagina ? 'limit ' + (pagina * 100) + ', 100': '' }`;
     console.log(`participanteDao.getByVotacaoId(${JSON.stringify(sql)})`);
     return this.dao.all(
@@ -104,7 +106,7 @@ class ParticipanteDao {
     return this.dao.run(
       `UPDATE ${this.nomeTabela}
        SET votou = 1
-      WHERE id = ?`,
+       WHERE id = ?`,
       [id]
     );
   }

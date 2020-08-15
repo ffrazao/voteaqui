@@ -8,11 +8,13 @@ class OpcaoDao {
   createTable() {
     const sql = `
     CREATE TABLE IF NOT EXISTS ${this.nomeTabela} (
-      id         INTEGER PRIMARY KEY AUTO_INCREMENT,
-      codigo     VARCHAR(255) NOT NULL,
-      nome       TEXT NOT NULL,
-      descricao  TEXT NOT NULL,
-      pautaId    INTEGER NOT NULL,
+      id           INTEGER PRIMARY KEY AUTO_INCREMENT,
+      codigo       VARCHAR(255) NOT NULL,
+      nome         TEXT NOT NULL,
+      descricao    TEXT NOT NULL,
+      pautaId      INTEGER NOT NULL,
+      criadoEm     TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      atualizadoEm TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
       CONSTRAINT ${this.nomeTabela}_fk_pautaId FOREIGN KEY (pautaId)
       REFERENCES Pauta(id) ON UPDATE CASCADE ON DELETE CASCADE
     )`;

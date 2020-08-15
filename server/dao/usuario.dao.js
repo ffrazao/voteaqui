@@ -8,15 +8,17 @@ class UsuarioDao {
   createTable() {
     const sql = `
     CREATE TABLE IF NOT EXISTS ${this.nomeTabela} (
-      id int NOT NULL AUTO_INCREMENT,
-      login varchar(255) NOT NULL,
-      senha varchar(255) DEFAULT NULL,
-      foto longblob,
-      email varchar(255) DEFAULT NULL,
-      perfil set('Admin','Parceiro','Cliente') NOT NULL DEFAULT 'Cliente',
-      ativo enum('S','N') NOT NULL DEFAULT 'S',
-      recuperarSenhaToken char(6) DEFAULT NULL,
+      id                   int NOT NULL AUTO_INCREMENT,
+      login                varchar(255) NOT NULL,
+      senha                varchar(255) DEFAULT NULL,
+      foto                 longblob,
+      email                varchar(255) DEFAULT NULL,
+      perfil               set('Admin','Parceiro','Cliente') NOT NULL DEFAULT 'Cliente',
+      ativo                enum('S','N') NOT NULL DEFAULT 'S',
+      recuperarSenhaToken  char(6) DEFAULT NULL,
       recuperarSenhaExpira bigint DEFAULT NULL,
+      criadoEm             TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      atualizadoEm         TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
       PRIMARY KEY (id),
       UNIQUE KEY login_UNIQUE (login),
       UNIQUE KEY email_UNIQUE (email)

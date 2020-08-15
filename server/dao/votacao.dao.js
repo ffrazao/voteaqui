@@ -18,6 +18,8 @@ class VotacaoDao {
       senhaTotDesbloqueio INTEGER NOT NULL DEFAULT '0',
       inicio              DATETIME NOT NULL,
       termino             DATETIME NOT NULL,
+      criadoEm            TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      atualizadoEm        TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
       resultado TEXT
     )`;
     return this.dao.run(sql);

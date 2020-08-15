@@ -9,9 +9,11 @@ class VotoDao {
   createTable() {
     const sql = `
     CREATE TABLE IF NOT EXISTS ${this.nomeTabela} (
-      id        INTEGER PRIMARY KEY AUTO_INCREMENT,
-      valor     TEXT NOT NULL,
-      votacaoId  INTEGER,
+      id            INTEGER PRIMARY KEY AUTO_INCREMENT,
+      valor         TEXT NOT NULL,
+      votacaoId     INTEGER,
+      criadoEm      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      atualizadoEm  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
       FOREIGN KEY (votacaoId) REFERENCES Votacao(id) ON DELETE CASCADE ON UPDATE CASCADE
     )`;
     return this.dao.run(sql);

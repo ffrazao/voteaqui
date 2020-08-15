@@ -15,6 +15,8 @@ class PautaDao {
       descricao         TEXT NOT NULL,
       quantidadeEscolha INTEGER NOT NULL,
       votacaoId         INTEGER NOT NULL,
+      criadoEm          TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      atualizadoEm      TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
       CONSTRAINT        ${this.nomeTabela}_fk_votacaoId FOREIGN KEY (votacaoId)
       REFERENCES        Votacao(id) ON UPDATE CASCADE ON DELETE CASCADE
     )`;

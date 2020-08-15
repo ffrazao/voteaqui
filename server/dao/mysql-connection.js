@@ -18,8 +18,6 @@ if (myArgs.includes('local')) {
   db_config.password = "root";
 }
 
-console.log(db_config);
-
 (function () {
   var connection;
 
