@@ -10,10 +10,14 @@ const mysql = require("mysql");
 // };
 
 const db_config = {
-  host: "us-mm-dca-95e55b8cdaff.g5.cleardb.net",
-  user: "b2dd9c3cee1fce",
-  password: "f877cc83",
-  database: "heroku_f33133c167d57c0",
+  // host: "us-mm-dca-95e55b8cdaff.g5.cleardb.net", // esta era a versao paga
+  // user: "b2dd9c3cee1fce", // esta era a versao paga
+  // password: "f877cc83", // esta era a versao paga
+  // database: "heroku_f33133c167d57c0", // esta era a versao paga
+  host: "us-cdbr-east-02.cleardb.com",
+  user: "b4444668e371c3",
+  password: "33074e44",
+  database: "heroku_b8191eb2f778d74",
   flags: "reconnect=true",
   dateStrings: true,
 };
